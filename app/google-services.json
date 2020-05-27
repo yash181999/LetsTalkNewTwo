@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "216911142304",
+    "firebase_url": "https://lettalknew.firebaseio.com",
+    "project_id": "lettalknew",
+    "storage_bucket": "lettalknew.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216911142304:android:ab07908fe224ff725398c5",
+        "android_client_info": {
+          "package_name": "com.lets.lettalknew"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216911142304-o4bdcnis1vst4ngdftjmmed8rf9akfkg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu4bE33tdxKPMHYLaOq3E2Q9fX24fwA8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "216911142304-o4bdcnis1vst4ngdftjmmed8rf9akfkg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

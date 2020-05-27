@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+    <resources>
+
+    <!-- Base application theme. -->
+
+
+
+    <style parent="Theme.MaterialComponents.Light.NoActionBar" name="AppTheme">
+
+    <!-- Customize your theme here. -->
+
+
+    <item name="colorPrimary">@color/colorPrimary</item>
+
+    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+
+    <item name="colorAccent">@color/colorLight</item>
+
+</style>
+
+    <!-- Base application theme. -->
+
+
+
+    -<style parent="Theme.AppCompat.Light.DarkActionBar" name="CropTheme">
+
+    <!-- Customize your theme here. -->
+
+
+    <item name="colorPrimary">@color/colorPrimary</item>
+
+    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+
+    <item name="colorAccent">@color/colorLight</item>
+
+</style>
+
+    <!--Circular button style -->
+
+
+
+    <style parent="" name="ShapeAppearanceOverlay.MyApp.Button.Circle">
+
+    <item name="cornerFamily">rounded</item>
+
+    <item name="cornerSize">50%</item>
+
+</style>
+
+    <!--Circular button style -->
+
+
+</resources>

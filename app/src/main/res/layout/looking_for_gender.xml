@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <RadioGroup
+        android:id="@+id/looking_for_gender_choice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:checked="true"
+            android:id="@+id/male"
+            android:text="Male"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </RadioButton>
+
+        <RadioButton
+
+            android:id="@+id/female"
+            android:text="Female"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </RadioButton>
+
+        <RadioButton
+            android:id="@+id/male_and_female"
+            android:text="Male and Female"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </RadioButton>
+
+        <RadioButton
+            android:id="@+id/other"
+            android:text="Other"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </RadioButton>
+
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

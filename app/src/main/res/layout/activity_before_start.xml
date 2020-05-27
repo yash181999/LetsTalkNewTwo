@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="15dp"
+    tools:context=".BeforeStart">
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Before you start the conversation , check out these tips..."
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="@color/colorBlack"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.101">
+
+    </TextView>
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/check_box_dog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:backgroundTint="@color/colorRed"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.996"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5"
+        app:layout_constraintVertical_bias="0.003"></com.google.android.material.checkbox.MaterialCheckBox>
+
+    <LinearLayout
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/check_box_dog"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/check_box_dog">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/dog_icon"
+            android:text="Don't be a   "
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"></TextView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="behave well"
+           >
+
+        </TextView>
+
+    </LinearLayout>
+
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/check_box_men"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorRed"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/check_box_dog"
+        app:layout_constraintVertical_bias="0.061"></com.google.android.material.checkbox.MaterialCheckBox>
+
+    <LinearLayout
+
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/check_box_men"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/check_box_men">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/hands"
+            android:text="Respect others"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"></TextView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="there is a person on the other side"
+            >
+
+        </TextView>
+
+    </LinearLayout>
+
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/check_box_good"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorRed"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/check_box_men"
+        app:layout_constraintVertical_bias="0.092">
+
+    </com.google.android.material.checkbox.MaterialCheckBox>
+
+    <LinearLayout
+
+        android:id="@+id/linearLayout4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/check_box_good"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/check_box_good">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableRight="@drawable/hour"
+            android:text="Have a good time  "
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"></TextView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="life is very short">
+
+        </TextView>
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:onClick="startTalking"
+        android:id="@+id/talk_btn"
+        android:layout_width="0dp"
+        android:text="Talk"
+        app:layout_constraintWidth_percent="0.8"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
+
+    </com.google.android.material.button.MaterialButton>
+
+    <TextView
+        android:visibility="gone"
+        android:text="Please check all the boxes."
+        android:textColor="@color/colorRed"
+        android:id="@+id/check_warning_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.516"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/check_box_good"
+        app:layout_constraintVertical_bias="0.134">
+
+    </TextView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

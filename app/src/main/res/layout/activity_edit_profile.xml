@@ -1,0 +1,689 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#f5faf6"
+    tools:context=".EditProfile">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="@color/colorPrimary">
+        <ImageView
+            android:onClick="goBack"
+            android:src="@drawable/ic_arrow_back_black_24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </ImageView>
+        <TextView
+            android:layout_marginLeft="35dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:textColor="@color/colorWhite"
+            android:gravity="center_vertical"
+            android:text="Edit Profile"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+        </TextView>
+
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="20dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/constraintLayout"
+                            android:layout_width="209dp"
+                            android:layout_height="143dp"
+                            android:background="@color/colorLightGray"
+
+
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintWidth_percent="0.6">
+
+                            <ImageView
+                                android:id="@+id/profile_pic_one"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/dummyprofile"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="0.0">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="pickImageOne"
+                                android:id="@+id/add_icon_one"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentBottom="true"
+                                android:src="@drawable/add"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+                            </ImageView>
+
+                            <ImageView
+                                android:visibility="gone"
+                                android:onClick="removeImageOne"
+                                android:id="@+id/remove_icon_one"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentBottom="true"
+                                android:src="@drawable/remove"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+                            </ImageView>
+
+
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+
+
+                            android:id="@+id/constraintLayout2"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:background="@color/colorLightGray"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHeight_percent="0.27"
+                            app:layout_constraintStart_toEndOf="@+id/constraintLayout"
+                            app:layout_constraintTop_toTopOf="@+id/constraintLayout"
+                            app:layout_constraintWidth_percent="0.27">
+
+                            <ImageView
+                                android:id="@+id/profile_pic_two"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/dummyprofile"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="pickImageTwo"
+                                android:id="@+id/add_icon_two"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/add"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="removeImageTwo"
+                                android:visibility="gone"
+                                android:id="@+id/remove_icon_two"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/remove"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+
+                            android:id="@+id/constraintLayout3"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:background="@color/colorLightGray"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="@+id/constraintLayout2"
+                            app:layout_constraintHeight_percent="0.27"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="@+id/constraintLayout2"
+                            app:layout_constraintTop_toBottomOf="@+id/constraintLayout2"
+                            app:layout_constraintVertical_bias="0.325"
+                            app:layout_constraintWidth_percent="0.27">
+
+                            <ImageView
+                                android:id="@+id/profile_pic_three"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/dummyprofile"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="pickImageThree"
+                                android:id="@+id/add_icon_three"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/add"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+
+                            <ImageView
+                                android:onClick="removeImageThree"
+                                android:visibility="gone"
+                                android:id="@+id/remove_icon_three"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/remove"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+
+                            android:id="@+id/constraintLayout4"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@color/colorLightGray"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHeight_percent="0.27"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="@+id/constraintLayout"
+                            app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                            app:layout_constraintVertical_bias="1.0"
+                            app:layout_constraintWidth_percent="0.27">
+
+
+                            <ImageView
+                                android:id="@+id/profile_pic_six"
+                                android:src="@drawable/dummyprofile"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="0.0">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="pickImageSix"
+                                android:id="@+id/add_icon_six"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/add"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="removeImageSix"
+                                android:visibility="gone"
+                                android:id="@+id/remove_icon_six"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/remove"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_marginTop="10dp"
+                            android:background="@color/colorLightGray"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="@+id/constraintLayout"
+                            app:layout_constraintHeight_percent="0.27"
+                            app:layout_constraintHorizontal_bias="1.0"
+                            app:layout_constraintStart_toEndOf="@+id/constraintLayout4"
+                            app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
+                            app:layout_constraintVertical_bias="0.0"
+                            app:layout_constraintWidth_percent="0.27">
+
+                            <ImageView
+                                android:id="@+id/profile_pic_five"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/dummyprofile"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="pickImageFive"
+                                android:id="@+id/add_icon_five"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/add"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="removeImageFive"
+                                android:visibility="gone"
+                                android:id="@+id/remove_icon_five"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/remove"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/constraintLayout5"
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:background="@color/colorLightGray"
+
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="@+id/constraintLayout3"
+                            app:layout_constraintHeight_percent="0.27"
+                            app:layout_constraintHorizontal_bias="1.0"
+                            app:layout_constraintStart_toStartOf="@+id/constraintLayout3"
+                            app:layout_constraintTop_toBottomOf="@+id/constraintLayout3"
+                            app:layout_constraintWidth_percent="0.27"
+                            app:layout_goneMarginTop="10dp">
+
+
+                            <ImageView
+
+                                android:id="@+id/profile_pic_four"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/dummyprofile"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent">
+
+                            </ImageView>
+
+
+                            <ImageView
+                                android:onClick="pickImageFour"
+                                android:id="@+id/add_icon_four"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/add"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                            <ImageView
+                                android:onClick="removeImageFour"
+                                android:visibility="gone"
+                                android:id="@+id/remove_icon_four"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/remove"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="1.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="1.0">
+
+                            </ImageView>
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        app:cardBackgroundColor="@color/colorWhite">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Profile Details"
+                                android:textColor="@color/colorPrimary">
+
+                            </TextView>
+
+                            <LinearLayout
+                               android:onClick="editNickname"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="15dp">
+
+                                <TextView
+                                    android:layout_gravity="center"
+                                    android:gravity="center_vertical"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:drawableLeft="@drawable/user_icon"
+                                    android:text=" Nickname">
+
+                                </TextView>
+
+                                <TextView
+                                    android:id="@+id/nickname_text"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="right"
+                                    android:text="Annoymous">
+
+                                </TextView>
+
+
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:onClick="editGender"
+                                android:id="@+id/edit_gender"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="15dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableLeft="@drawable/gender_icon"
+                                    android:gravity="center_vertical"
+                                    android:text=" Gender">
+
+                                </TextView>
+
+                                <TextView
+                                    android:id="@+id/gender_text"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableRight="@drawable/gender_icon"
+                                    android:gravity="right"
+                                    android:textColor="@color/colorBlack">
+
+                                </TextView>
+
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:onClick="editAge"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="15dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableLeft="@drawable/age_range_icon"
+                                    android:gravity="center_vertical"
+                                    android:text=" My age">
+
+                                </TextView>
+
+                                <TextView
+                                    android:id="@+id/age_text"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:gravity="right"
+                                    android:text="18">
+                                </TextView>
+
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:background="@color/colorWhite">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="LOOKING FOR"
+                                android:textColor="@color/colorPrimary">
+
+                            </TextView>
+
+                            <LinearLayout
+                                android:onClick="lookingForGender"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="15dp">
+
+                                <TextView
+
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableLeft="@drawable/gender_icon"
+                                    android:gravity="center_vertical"
+                                    android:text=" Gender">
+
+                                </TextView>
+
+                                <TextView
+                                    android:id="@+id/looking_for_gender_text"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableRight="@drawable/gender_icon"
+                                    android:gravity="right">
+
+                                </TextView>
+
+
+                            </LinearLayout>
+
+
+                            <LinearLayout
+                                android:onClick="lookingForAgeRage"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="15dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableLeft="@drawable/age_range_icon"
+                                    android:gravity="center_vertical"
+                                    android:text=" Age Range">
+
+                                </TextView>
+
+                                <TextView
+                                    android:id="@+id/looking_for_age_range_text"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:gravity="right"
+                                    android:text="18-45">
+
+                                </TextView>
+
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:onClick="lookingForLanguage"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:padding="15dp">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:drawableLeft="@drawable/ic_language_black_24dp"
+                                    android:gravity="center_vertical"
+                                    android:text=" Language">
+
+                                </TextView>
+
+                                <TextView
+                                    android:id="@+id/looking_for_language_text"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:gravity="right"
+                                    android:text="English(India)">
+
+                                </TextView>
+
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                </LinearLayout>
+
+            </ScrollView>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floating_upload_btn"
+            android:onClick="uploadProfile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/done_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.929"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.974">
+
+        </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
