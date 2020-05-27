@@ -82,7 +82,20 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
 
           Picasso.get ().load ( image )
                   .fit ().into (holder.messageImage);
-          holder.messageImage.setVisibility ( View.VISIBLE );
+          holder.imageMsgTime.setText ( time );
+          holder.imageMsgLayout.setVisibility ( View.VISIBLE );
+
+          if(position == chatList.size ()-1) {
+              if(chatList.get ( position ).isSeen == true) {
+                  holder.imageMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
+              }
+              else {
+                  holder.imageMsgTicks.setImageResource ( R.drawable.done_all_black );
+              }
+          }
+          else {
+              holder.textMsgTicks.setVisibility ( View.GONE );
+          }
       }
     }
 

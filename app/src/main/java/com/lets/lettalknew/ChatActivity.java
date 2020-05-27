@@ -98,6 +98,11 @@ public class ChatActivity extends AppCompatActivity {
     StorageReference storageReference;
     FirebaseStorage storage;
 
+    //checking seen and unseen
+    ValueEventListener seenListener;
+    DatabaseReference userRefForSeen;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
@@ -152,6 +157,7 @@ public class ChatActivity extends AppCompatActivity {
         } );
 
          loadMessages ();
+         seenMessage();
     }
 
     //watching message empty or not
@@ -220,6 +226,38 @@ public class ChatActivity extends AppCompatActivity {
 
     }
 
+    public void seenMessage() {
+        userRefForSeen = database.getReference ("Chats");
+
+        seenListener = userRefForSeen.addValueEventListener ( new ValueEventListener () {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+               for(DataSnapshot ds : dataSnapshot.getChildren ()) {
+                   ModalChat chat = ds.getValue (ModalChat.class);
+                   if(chat.getReceiver ().equals ( userId ) && chat.getSender ().equals (id) ) {
+                        HashMap<String , Object > hasSeenHasMap = new HashMap<> (  );
+                        hasSeenHasMap.put ( "isSeen",true );
+                        ds.getRef ().updateChildren ( hasSeenHasMap );
+
+
+                   }
+               }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        } );
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause ();
+        userRefForSeen.removeEventListener ( seenListener );
+    }
 
     public void sendChatMessage(View view){
 
@@ -227,10 +265,13 @@ public class ChatActivity extends AppCompatActivity {
         SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
         final String currentDate = currentDateTime.format ( calendar.getTime () );
         String message = chatMessage.getText ().toString ();
-        Map<String , String> messages = new HashMap<> (  );
+        Map<String , Object> messages = new HashMap<> (  );
         messages.put ("sender", userId );
         messages.put ( "receiver", id );
         messages.put ( "message",message );
+        messages.put("time",currentDate);
+        messages.put ( "isSeen",false );
+
 
         DatabaseReference databaseReference = database.getReference ();
 
@@ -288,10 +329,16 @@ public class ChatActivity extends AppCompatActivity {
                 storageReference.getDownloadUrl ().addOnSuccessListener ( new OnSuccessListener<Uri> () {
                     @Override
                     public void onSuccess(Uri uri) {
-                      Map<String, String> imageMessage = new HashMap<> (  );
+                        Calendar calendar = Calendar.getInstance ();
+                        SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
+                        final String currentDate = currentDateTime.format ( calendar.getTime () );
+                      Map<String, Object> imageMessage = new HashMap<> (  );
                       imageMessage.put ( "image",uri.toString () );
                       imageMessage.put ( "sender",userId );
                       imageMessage.put ( "receiver",id );
+                      imageMessage.put("time",currentDate);
+                      imageMessage.put ( "isSeen",false );
+
 
                         DatabaseReference databaseReference = database.getReference ();
 
