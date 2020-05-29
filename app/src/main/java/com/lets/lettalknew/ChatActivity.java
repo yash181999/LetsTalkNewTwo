@@ -357,20 +357,31 @@ public class ChatActivity extends AppCompatActivity {
                         imageMessage.put("time",currentDate);
                         imageMessage.put ( "isSeen",false );
 
-
-
-
                         DatabaseReference databaseReference = database.getReference ();
 
                         databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).addOnSuccessListener ( new OnSuccessListener<Void> () {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 progressDialog.dismiss ();
+
+                                notify = true;
+
+                                final String msg = "AUDIO MESSAGE";
+                                db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
+                                    @Override
+                                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                        if(e==null) {
+                                            if(notify) {
+                                                String name =  documentSnapshot.getString ( "nickName" );
+                                                sendNotification(id,name,msg);
+                                            }
+                                            notify = false;
+                                        }
+                                    }
+                                } );
+
                             }
                         } );
-
-
-
 
                     }
                 } );
@@ -493,8 +504,6 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         } );
-
-
     }
 
     private void sendNotification(final String id, final String name, final String msg) {
@@ -514,7 +523,7 @@ public class ChatActivity extends AppCompatActivity {
                             .enqueue ( new Callback<NotificationResponse> () {
                                 @Override
                                 public void onResponse(Call<NotificationResponse> call, Response<NotificationResponse> response) {
-
+                                    Toast.makeText ( ChatActivity.this, msg, Toast.LENGTH_SHORT ).show ();
                                 }
 
                                 @Override
@@ -606,6 +615,25 @@ public class ChatActivity extends AppCompatActivity {
                             @Override
                             public void onSuccess(Void aVoid) {
                               progressDialog.dismiss ();
+
+
+                                notify = true;
+
+                                final String msg = "PHOTO";
+                                db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
+                                    @Override
+                                    public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                        if(e==null) {
+                                            if(notify) {
+                                                String name =  documentSnapshot.getString ( "nickName" );
+                                                sendNotification(id,name,msg);
+                                            }
+                                            notify = false;
+                                        }
+                                    }
+                                } );
+
+
                             }
                         } );
 
@@ -654,7 +682,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     public void chatBack(View view) {
-
+        startActivity ( new Intent ( getApplicationContext (),Main.class ) );
+        finish ();
     }
 
 }
