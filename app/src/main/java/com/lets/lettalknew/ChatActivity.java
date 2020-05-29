@@ -10,14 +10,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.ArrayAdapter;
@@ -32,11 +36,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -51,13 +57,19 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -68,7 +80,7 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseFirestore db;
     DocumentReference documentReferenceSent, documentReferenceRecieved;
 
-    TextView chatWithName,chatWithStatus;
+    TextView chatWithName,chatWithStatus,textRecording;
     ImageView chatWithImage;
     EditText chatMessage;
     Button chatAudioBtn, chatSendBtn;
@@ -77,9 +89,7 @@ public class ChatActivity extends AppCompatActivity {
 
     FirebaseDatabase database;
 
-
-
-    private ChatAdapter chatAdapter;
+    private LastChatList chatAdapter;
 
     List<ModalChat> chatList;
 
@@ -97,10 +107,19 @@ public class ChatActivity extends AppCompatActivity {
 
     StorageReference storageReference;
     FirebaseStorage storage;
-
+    String fileName = null;
     //checking seen and unseen
     ValueEventListener seenListener;
     DatabaseReference userRefForSeen;
+
+    MediaRecorder recorder;
+
+    ImageView emojy,imageSendBtn;
+
+    String hisName="", chatWithGender = "", chatWIthProfileImage ="",chatWithAge="";
+
+    NotificationApiService notificationApiService;
+    boolean notify = false;
 
 
     @Override
@@ -124,16 +143,29 @@ public class ChatActivity extends AppCompatActivity {
         sentMessage = new ArrayList<> (  );
         receivedMessage = new ArrayList<> (  );
 
+        chatWithStatus = findViewById ( R.id.chat_with_status );
+
         chatListView =(RecyclerView) findViewById ( R.id.chat_list_view );
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager ( this );
 
         linearLayoutManager.setStackFromEnd ( true );
         chatListView.setHasFixedSize ( true );
+
         chatListView.setLayoutManager ( linearLayoutManager );
 
 
+        //create api service---
+        notificationApiService = NotificationClient.getRetrofit ( "https://fcm.googleapis.com/" ).create ( NotificationApiService.class );
+
+
+
         storage = FirebaseStorage.getInstance ();
+
+        emojy = findViewById ( R.id.emojy );
+        imageSendBtn = findViewById ( R.id.chat_camera );
+
+        textRecording = findViewById ( R.id.text_recording );
 
 
         database = FirebaseDatabase.getInstance();
@@ -147,18 +179,89 @@ public class ChatActivity extends AppCompatActivity {
                     String nickName = documentSnapshot.getString ( "nickName" );
                     if (nickName != null) {
                         chatWithName.setText ( nickName );
+                        hisName = nickName;
                     }
                     String profilePic = documentSnapshot.getString ( "ProfilePic1" );
                     if(profilePic!=null) {
+                        chatWIthProfileImage = profilePic;
                         Picasso.get ().load ( profilePic ).fit ().into ( chatWithImage );
+                    }
+                    String status = documentSnapshot.getString ( "userStatus" );
+                    if(status!=null) {
+                        if(status=="online") {
+                            chatWithStatus.setText ( "online" );
+                        }
+                        else{
+                            String lastSeen = documentSnapshot.getString ( "lastSeenTime" );
+                            if(lastSeen!=null) {
+                                chatWithStatus.setText ( lastSeen);
+                            }
+
+                        }
+                    }
+                    String gender = documentSnapshot.getString ( "gender" );
+                    if(gender!=null) {
+                        chatWithGender = gender;
+                    }
+                    String age = documentSnapshot.getString ( "age" );
+                    if(age!=null) {
+                      chatWithAge = documentSnapshot.getString ( age );
                     }
                 }
             }
         } );
 
+        //for audio chat ...
+        chatAudioBtn.setOnTouchListener ( new View.OnTouchListener () {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction ()==MotionEvent.ACTION_DOWN) {
+
+                   if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.RECORD_AUDIO )
+                           != PackageManager.PERMISSION_GRANTED ) {
+
+                       ActivityCompat.requestPermissions ( ChatActivity.this,
+                               new String[] {Manifest.permission.RECORD_AUDIO},REQUEST_CODE_STORAGE_PERMISSION );
+
+                    }
+                    else if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.READ_EXTERNAL_STORAGE )
+                           != PackageManager.PERMISSION_GRANTED ) {
+                       ActivityCompat.requestPermissions ( ChatActivity.this,
+                               new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},05 );
+                   }
+                    else if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.WRITE_EXTERNAL_STORAGE )
+                           != PackageManager.PERMISSION_GRANTED ) {
+                       ActivityCompat.requestPermissions ( ChatActivity.this,
+                               new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},06 );
+                   }
+                   else {
+                       fileName = Environment.getExternalStorageDirectory ().getAbsolutePath ();
+                       fileName += "/recorded_audio.3gp";
+                        chatMessage.setVisibility ( View.GONE );
+                        emojy.setVisibility ( View.GONE );
+                        imageSendBtn.setVisibility ( View.GONE );
+                        textRecording.setVisibility ( View.VISIBLE );
+
+                        recordAudio ();
+                   }
+
+                }
+
+                else if(event.getAction ()==MotionEvent.ACTION_UP) {
+                    chatMessage.setVisibility ( View.VISIBLE );
+                    emojy.setVisibility ( View.VISIBLE );
+                    imageSendBtn.setVisibility ( View.VISIBLE );
+                    textRecording.setVisibility ( View.GONE );
+                    stopAudio ();
+                }
+
+                return false;
+            }
+        } );
+
          loadMessages ();
          seenMessage();
-    }
+    }//oncreate mehtod end
 
     //watching message empty or not
     private TextWatcher textWatcher = new TextWatcher () {
@@ -188,6 +291,103 @@ public class ChatActivity extends AppCompatActivity {
     };
     //watching message empty or not
 
+
+    public void recordAudio() {
+        recorder = new MediaRecorder ();
+        recorder.setAudioSource ( MediaRecorder.AudioSource.MIC );
+        recorder.setOutputFormat ( MediaRecorder.OutputFormat.THREE_GPP );
+        recorder.setOutputFile ( fileName );
+        recorder.setAudioEncoder ( MediaRecorder.AudioEncoder.AMR_NB );
+
+        try {
+            recorder.prepare ();
+        } catch (IOException e) {
+
+        }
+
+        recorder.start ();
+
+    }
+
+    public void stopAudio() {
+        try {
+            recorder.stop ();
+            recorder.release ();
+            recorder = null;
+            startUploadingAudio();
+        }
+        catch (Exception e) {
+
+        }
+
+
+    }
+
+    public void startUploadingAudio() {
+
+        Calendar calendar = Calendar.getInstance ();
+        SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
+        final String currentDate = currentDateTime.format ( calendar.getTime () );
+
+
+        final ProgressDialog progressDialog = new ProgressDialog (this  );
+        progressDialog.setMessage ( "Sending audio" );
+        progressDialog.show ();
+
+
+
+       final StorageReference filePath = storage.getReference ().child ( "Audios" ).child ( userId ).child ( id ).child (currentDate);
+
+
+        Uri uri = Uri.fromFile ( new File ( fileName ) );
+
+        filePath.putFile ( uri ).addOnSuccessListener ( new OnSuccessListener<UploadTask.TaskSnapshot> () {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                filePath.getDownloadUrl ().addOnSuccessListener ( new OnSuccessListener<Uri> () {
+                    @Override
+                    public void onSuccess(Uri uri) {
+
+
+                        Map<String, Object> imageMessage = new HashMap<> (  );
+                        imageMessage.put ( "audio",uri.toString () );
+                        imageMessage.put ( "sender",userId );
+                        imageMessage.put ( "receiver",id );
+                        imageMessage.put("time",currentDate);
+                        imageMessage.put ( "isSeen",false );
+
+
+
+
+                        DatabaseReference databaseReference = database.getReference ();
+
+                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).addOnSuccessListener ( new OnSuccessListener<Void> () {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                progressDialog.dismiss ();
+                            }
+                        } );
+
+
+
+
+                    }
+                } );
+
+            }
+        } ).addOnFailureListener ( new OnFailureListener () {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText (getApplicationContext (), "failed : " + e, Toast.LENGTH_SHORT ).show ();
+
+            }
+        } );
+    }
+
+
+
+
     public void loadMessages() {
 
         chatList = new ArrayList<> (  );
@@ -213,8 +413,9 @@ public class ChatActivity extends AppCompatActivity {
 
                     adapterChat.notifyDataSetChanged ();
 
-                    chatListView.setAdapter ( adapterChat );
 
+                    chatListView.setAdapter ( adapterChat );
+                    chatListView.getLayoutManager ().scrollToPosition ( adapterChat.getItemCount ()-1 );
                 }
             }
 
@@ -238,8 +439,6 @@ public class ChatActivity extends AppCompatActivity {
                         HashMap<String , Object > hasSeenHasMap = new HashMap<> (  );
                         hasSeenHasMap.put ( "isSeen",true );
                         ds.getRef ().updateChildren ( hasSeenHasMap );
-
-
                    }
                }
             }
@@ -261,10 +460,12 @@ public class ChatActivity extends AppCompatActivity {
 
     public void sendChatMessage(View view){
 
+        notify = true;
+
         Calendar calendar = Calendar.getInstance ();
         SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
         final String currentDate = currentDateTime.format ( calendar.getTime () );
-        String message = chatMessage.getText ().toString ();
+        final String message = chatMessage.getText ().toString ();
         Map<String , Object> messages = new HashMap<> (  );
         messages.put ("sender", userId );
         messages.put ( "receiver", id );
@@ -279,6 +480,59 @@ public class ChatActivity extends AppCompatActivity {
 
         chatMessage.setText ( "" );
 
+        final String msg = message;
+        db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if(e==null) {
+                    if(notify) {
+                        String name =  documentSnapshot.getString ( "nickName" );
+                        sendNotification(id,name,msg);
+                    }
+                    notify = false;
+                }
+            }
+        } );
+
+
+    }
+
+    private void sendNotification(final String id, final String name, final String msg) {
+        DatabaseReference allTokens = FirebaseDatabase.getInstance ().getReference ("Tokens");
+        Query query  = allTokens.orderByKey ().equalTo ( id );
+        query.addValueEventListener ( new ValueEventListener () {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot ds: dataSnapshot.getChildren ()) {
+                    Token token = ds.getValue (Token.class);
+                    NotificationData data = new NotificationData ( userId,name+":"+msg,
+                            "New message",id,R.drawable.communication );
+
+                    NotificationSender sender = new NotificationSender ( data,token.getToken () );
+                    notificationApiService.sendNotification ( sender )
+                            .enqueue ( new Callback<NotificationResponse> () {
+                                @Override
+                                public void onResponse(Call<NotificationResponse> call, Response<NotificationResponse> response) {
+
+                                }
+
+                                @Override
+                                public void onFailure(Call<NotificationResponse> call, Throwable t) {
+
+                                }
+                            } );
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        } );
+
     }
 
     public void sendImage(View view) {
@@ -292,6 +546,8 @@ public class ChatActivity extends AppCompatActivity {
 
         }
     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -321,6 +577,10 @@ public class ChatActivity extends AppCompatActivity {
 
         storageReference = storage.getReference ().child ( "SentImages" ).child ( userId ).child ( id ).child (selectImageUri.toString ());
 
+        final ProgressDialog progressDialog = new ProgressDialog (this  );
+        progressDialog.setMessage ( "Sending Image" );
+        progressDialog.show ();
+
 
         UploadTask uploadTask = storageReference.putBytes ( data );
         uploadTask.addOnSuccessListener ( new OnSuccessListener<UploadTask.TaskSnapshot> () {
@@ -342,7 +602,12 @@ public class ChatActivity extends AppCompatActivity {
 
                         DatabaseReference databaseReference = database.getReference ();
 
-                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage );
+                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).addOnSuccessListener ( new OnSuccessListener<Void> () {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                              progressDialog.dismiss ();
+                            }
+                        } );
 
                     }
                 } );
@@ -381,6 +646,15 @@ public class ChatActivity extends AppCompatActivity {
             db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
             db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
         }
+    }
+
+    public void seeProfile(View view) {
+        AnotherUserProfileDialog anotherUserProfile = new AnotherUserProfileDialog (hisName,chatWIthProfileImage,chatWithGender,chatWithAge);
+        anotherUserProfile.show(getSupportFragmentManager (),"userProfile");
+    }
+
+    public void chatBack(View view) {
+
     }
 
 }

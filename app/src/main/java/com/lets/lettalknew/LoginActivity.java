@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.drawable.shapes.Shape;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -25,10 +27,12 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -138,8 +142,30 @@ public class LoginActivity extends AppCompatActivity {
                             DocumentReference documentReference  = db.collection ( "Users" ).document (userId);
 
                             //updating UI
-                            updateUi(documentReference);
+                            documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    String name = documentSnapshot.getString ( "nickName" );
+                                    if(name!=null) {
+                                        startActivity ( new Intent ( getApplicationContext (),Main.class ) );
+                                    }
+
+                                    else {
+                                        startActivity ( new Intent ( getApplicationContext (),BeforeStart.class ) );
+                                    }
+                                }
+                            } );
+
+                            //update Device Token
+                            updateToken( FirebaseInstanceId.getInstance ().getToken (  ) );
+
                             //updating UI
+
+                            //save uid of the user to sharedPrefreces
+                            SharedPreferences sp = getSharedPreferences ( "SP_USER",MODE_PRIVATE );
+                            SharedPreferences.Editor editor = sp.edit ();
+                                editor.putString ( "Current_USERID",userId );
+                            editor.apply ();
 
                             Toast.makeText ( getApplicationContext (), "Sign in successfull", Toast.LENGTH_SHORT ).show ();
 
@@ -178,6 +204,13 @@ public class LoginActivity extends AppCompatActivity {
             }
         } );
 
+
+    }
+
+    public void updateToken(String token) {
+        DatabaseReference ref = FirebaseDatabase.getInstance ().getReference ("Tokens");
+        Token mToken = new Token ( token );
+        ref.child ( userId ).setValue ( mToken );
 
     }
 

@@ -20,6 +20,7 @@
         <!--            Tool BAR-->
 
         <com.google.android.material.appbar.MaterialToolbar
+            android:onClick="seeProfile"
             android:id="@+id/topAppBar"
             style="@style/Widget.MaterialComponents.Toolbar.Primary"
             android:layout_width="match_parent"
@@ -40,6 +41,7 @@
             <com.makeramen.roundedimageview.RoundedImageView
                 android:id="@+id/profile_image_chat"
                 android:layout_width="50dp"
+                android:src="@drawable/dummyprofile"
                 android:layout_height="50dp"
                 android:padding="10dp"
                 app:riv_oval="true">
@@ -67,7 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="10dp"
-                    android:text="online"
+                    android:text=""
                     android:textColor="@color/colorWhite"
                     android:textSize="14sp">
 
@@ -172,6 +174,20 @@
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.MyApp.Button.Circle">
 
         </com.google.android.material.button.MaterialButton>
+
+            <TextView
+                android:visibility="gone"
+                android:gravity="center"
+                android:text="recording"
+                android:id="@+id/text_recording"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/chat_camera"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+            </TextView>
 
             <com.google.android.material.button.MaterialButton
                 android:visibility="gone"

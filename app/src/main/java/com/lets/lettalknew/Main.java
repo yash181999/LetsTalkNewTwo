@@ -37,6 +37,7 @@ import com.squareup.picasso.Picasso;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Random;
 import java.util.Set;
 
 public class Main extends AppCompatActivity implements LookingForGender.LookingForGenderListener,LookingForAge.LookingForAgeListener{
@@ -56,7 +57,7 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
              userProfileName,userProfileLastMessage,
              userProfileActivity,userProfileDate;
 
-     private ChatAdapter chatAdapter;
+     private LastChatList chatAdapter;
 
      String userStatus;
 
@@ -98,39 +99,39 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         searchRandomChat = findViewById ( R.id.search_random_user );
 
 
-       //edit profile
+        //edit profile
         headerView.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-               startActivity ( new Intent ( getApplicationContext (),EditProfile.class) );
-               finish ();
+                startActivity ( new Intent ( getApplicationContext (),EditProfile.class) );
+                finish ();
             }
         } );
         //edit profile
 
         loadProfileDetails ();
 
-       /**navigation View**/
-       navigationView.setNavigationItemSelectedListener ( new NavigationView.OnNavigationItemSelectedListener () {
-           @Override
-           public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-               switch(item.getItemId ()) {
-                   case R.id.nav_gender:
-                       lookingForGender();
-                       break;
-                   case R.id.nav_age_range:
-                       lookingForAgeRange();
-                       break;
-                   case R.id.nav_blocked_users:
-                       navBlockedUsers();
-                       break;
-                   case R.id.nav_settings:
-                       navSettings();
-                       break;
-               }
-               return false;
-           }
-       } );
+        /**navigation View**/
+        navigationView.setNavigationItemSelectedListener ( new NavigationView.OnNavigationItemSelectedListener () {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch(item.getItemId ()) {
+                    case R.id.nav_gender:
+                        lookingForGender();
+                        break;
+                    case R.id.nav_age_range:
+                        lookingForAgeRange();
+                        break;
+                    case R.id.nav_blocked_users:
+                        navBlockedUsers();
+                        break;
+                    case R.id.nav_settings:
+                        navSettings();
+                        break;
+                }
+                return false;
+            }
+        } );
         /**navigation View**/
 
         /**chatList View**/
@@ -142,40 +143,6 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         userProfileActivity = new ArrayList<> (  );
         userProfileImage = new ArrayList<> (  );
         userProfileDate = new ArrayList<> (  );
-//
-//        db.collection ( "Users" ).addSnapshotListener ( new EventListener<QuerySnapshot> () {
-//            @Override
-//            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-//                if(e==null) {
-//                    for(DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments ()) {
-//                       if(!documentSnapshot.getId ().equals ( userId )) {
-//
-//
-//                           String profilePhoto = documentSnapshot.getString ( "ProfilePic1" );
-//                           String name = documentSnapshot.getString ( "nickName" );
-//                           if(profilePhoto!=null) {
-//                               userProfileImage.add ( profilePhoto );
-//                           }
-//
-//                           if(name != null) {
-//                               userProfileName.add ( name );
-//                           }
-//
-//                           chatAdapter  = new ChatAdapter ( getApplicationContext (),R.layout.chat_list_layout,userProfileName,userProfileImage );
-//
-//                           chatListView.setAdapter ( chatAdapter );
-//
-//
-//                       }
-//
-//                    }
-//                }
-//            }
-//        } );
-
-
-
-
 
 
         /**chatList View**/
@@ -183,8 +150,16 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
                     db.collection ( "Users" ).
                     document ( mAuth.getCurrentUser ().getUid () ).
                     update ( "userStatus", "online" );
+                    populateLastChatList ();
+    }
+
+    public void populateLastChatList() {
+
+
 
     }
+
+
 
    /**Loading Profile**/
     public void loadProfileDetails() {
@@ -303,19 +278,32 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 if(e==null) {
+                    ArrayList<String> randomId = new ArrayList<> (  );
+
                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments ()) {
                         if (!documentSnapshot.getId ().equals (userId  )) {
-                            flag++;
-                             if(flag == 1) {
-                                 idRandom = documentSnapshot.getId ();
-                                 Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
-                                 intent.putExtra ( "id", idRandom );
-                                 startActivity ( intent );
-                                 Toast.makeText ( Main.this, "success", Toast.LENGTH_SHORT ).show ();
 
-                             }
+                            randomId.add ( documentSnapshot.getId () );
 
                         }
+                    }
+
+
+
+
+                        String idRandom = randomId.get ( new Random (  ).nextInt (randomId.size ()) ) ;
+
+
+                    flag++;
+                    if(flag == 1) {
+
+
+                        Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
+                        intent.putExtra ( "id", idRandom );
+                        startActivity ( intent );
+                        Toast.makeText ( Main.this, idRandom, Toast.LENGTH_SHORT ).show ();
+
+
                     }
                 }
                 else{

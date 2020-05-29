@@ -11,6 +11,8 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
+    <uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
+
     <application android:theme="@style/AppTheme"
         android:supportsRtl="true"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -19,7 +21,6 @@
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="true">
 
-    <activity android:name=".AnotherUserProfile"/>
 
     <activity android:name=".ChatActivity"/>
 
@@ -29,7 +30,7 @@
 
     <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" android:theme="@style/CropTheme"/>
 
-    <activity android:name=".EditPhoto"/>
+
 
     <activity android:name=".EditProfile"/>
 
@@ -52,5 +53,17 @@
 
     <activity android:name=".LoginActivity"/>
 
-</application>
+        <service android:name=".NotificationFirebaseService"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.INSTANCE_ID_SERVICE"/>
+            </intent-filter>
+
+        </service>
+
+
+    </application>
 </manifest>

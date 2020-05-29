@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 
 
-public class ChatAdapter extends ArrayAdapter<String> {
+public class LastChatList extends ArrayAdapter<String> {
 
     ArrayList<String> sentMessage,revievedMessage;
 
@@ -35,7 +35,7 @@ public class ChatAdapter extends ArrayAdapter<String> {
     }
 
 
-    public ChatAdapter(@NonNull Context context, int resource, ArrayList<String> sentMessage,int messageType) {
+    public LastChatList(@NonNull Context context, int resource, ArrayList<String> sentMessage, int messageType) {
         super ( context, resource ,sentMessage);
         mCtx = context;
         listLayoutRes = resource;
