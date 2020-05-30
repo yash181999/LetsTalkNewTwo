@@ -11,88 +11,122 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/layout_tool_bar"
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout2"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
-            android:background="@color/colorPrimary"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingLeft="15dp"
-            android:paddingRight="15dp"
+            android:layout_height="wrap_content"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/menu_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/menu_icon">
-
-            </ImageView>
-
-            <TextView
-
-                android:text="Lets Talk"
-                android:textColor="@color/colorWhite"
-                android:layout_width="wrap_content"
-                android:layout_marginLeft="15dp"
-                android:textSize="18sp"
-                android:layout_height="wrap_content">
-
-            </TextView>
-
-            <SearchView
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/toolBar"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPrimary"
+                app:layout_scrollFlags="scroll|enterAlways"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
-            </SearchView>
+                <ImageView
+                    android:id="@+id/menu_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/menu_icon">
+                </ImageView>
+
+                <TextView
+                    android:paddingLeft="20dp"
+                    android:textSize="18sp"
+                    android:textColor="@color/colorWhite"
+                    android:text="Lets Talk"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                </TextView>
+
+
+            </com.google.android.material.appbar.MaterialToolbar>
+
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                app:tabIndicatorColor="@color/colorBlack"
+                app:tabIndicatorHeight="2dp"
+                app:tabMode="fixed"
+                app:tabTextColor="@color/colorWhite">
+
+            </com.google.android.material.tabs.TabLayout>
+
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+
+        <androidx.viewpager.widget.ViewPager
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/appBarLayout2">
+
+
+        </androidx.viewpager.widget.ViewPager>
 
 
 
 
-        </LinearLayout>
+<!--        <LinearLayout-->
+<!--            android:id="@+id/layout_tool_bar"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="?actionBarSize"-->
+<!--            android:background="@color/colorPrimary"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:paddingLeft="15dp"-->
+<!--            android:paddingRight="15dp"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent">-->
+
+
+
+<!--            <TextView-->
+
+<!--                android:text="Lets Talk"-->
+<!--                android:textColor="@color/colorWhite"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_marginLeft="15dp"-->
+<!--                android:textSize="18sp"-->
+<!--                android:layout_height="wrap_content">-->
+
+<!--            </TextView>-->
+
+
+
+
+<!--        </LinearLayout>-->
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:onClick="searchRandomUser"
             android:id="@+id/search_random_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorLight"
+            android:onClick="searchRandomUser"
             android:src="@drawable/ic_search_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.954"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layout_tool_bar"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.974">
 
         </com.google.android.material.floatingactionbutton.FloatingActionButton>
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layout_tool_bar"
-            app:layout_constraintVertical_bias="0.0">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <ListView
-                    android:id="@+id/chatListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                </ListView>
-
-            </LinearLayout>
-
-        </ScrollView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

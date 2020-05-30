@@ -46,7 +46,7 @@ public class BeforeStart extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance ();
         FirebaseUser user = mAuth.getCurrentUser ();
-        String userId = user.getUid ();
+        userId = user.getUid ();
 
         db=  FirebaseFirestore.getInstance ();
         documentReference = db.collection ( "Users" ).document (userId);
@@ -60,11 +60,8 @@ public class BeforeStart extends AppCompatActivity {
         if(checkBoxTime.isChecked () && checkBoxDog.isChecked () && checkBoxMan.isChecked ()) {
             checkWarningText.setVisibility ( View.GONE );
 
-            Map<String , String> userDetails = new HashMap<> (  );
 
-            userDetails.put ( "nickName","annonymous" );
-            userDetails.put ( "age","18" );
-            userDetails.put ( "gender","male" );
+            ModalUser userDetails = new ModalUser ("Anonymous","Male","18","Women","18-45","English",userId,"online",null);
 
             documentReference.set ( userDetails ).addOnSuccessListener ( new OnSuccessListener<Void> () {
                 @Override

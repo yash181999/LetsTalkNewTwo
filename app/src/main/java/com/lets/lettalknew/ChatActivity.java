@@ -2,6 +2,7 @@ package com.lets.lettalknew;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -16,11 +17,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Adapter;
@@ -140,6 +143,8 @@ public class ChatActivity extends AppCompatActivity {
         chatAudioBtn = findViewById ( R.id.chat_audio );
         chatMessage.addTextChangedListener ( textWatcher );
 
+        toolbar = findViewById ( R.id.topAppBar );
+
         sentMessage = new ArrayList<> (  );
         receivedMessage = new ArrayList<> (  );
 
@@ -154,15 +159,14 @@ public class ChatActivity extends AppCompatActivity {
 
         chatListView.setLayoutManager ( linearLayoutManager );
 
-
         //create api service---
         notificationApiService = NotificationClient.getRetrofit ( "https://fcm.googleapis.com/" ).create ( NotificationApiService.class );
-
-
+        //create api service---
 
         storage = FirebaseStorage.getInstance ();
 
         emojy = findViewById ( R.id.emojy );
+
         imageSendBtn = findViewById ( R.id.chat_camera );
 
         textRecording = findViewById ( R.id.text_recording );
@@ -172,44 +176,6 @@ public class ChatActivity extends AppCompatActivity {
 
         id = getIntent ().getStringExtra ("id");
 
-        db.collection ( "Users" ).document (id).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if (e == null) {
-                    String nickName = documentSnapshot.getString ( "nickName" );
-                    if (nickName != null) {
-                        chatWithName.setText ( nickName );
-                        hisName = nickName;
-                    }
-                    String profilePic = documentSnapshot.getString ( "ProfilePic1" );
-                    if(profilePic!=null) {
-                        chatWIthProfileImage = profilePic;
-                        Picasso.get ().load ( profilePic ).fit ().into ( chatWithImage );
-                    }
-                    String status = documentSnapshot.getString ( "userStatus" );
-                    if(status!=null) {
-                        if(status=="online") {
-                            chatWithStatus.setText ( "online" );
-                        }
-                        else{
-                            String lastSeen = documentSnapshot.getString ( "lastSeenTime" );
-                            if(lastSeen!=null) {
-                                chatWithStatus.setText ( lastSeen);
-                            }
-
-                        }
-                    }
-                    String gender = documentSnapshot.getString ( "gender" );
-                    if(gender!=null) {
-                        chatWithGender = gender;
-                    }
-                    String age = documentSnapshot.getString ( "age" );
-                    if(age!=null) {
-                      chatWithAge = documentSnapshot.getString ( age );
-                    }
-                }
-            }
-        } );
 
         //for audio chat ...
         chatAudioBtn.setOnTouchListener ( new View.OnTouchListener () {
@@ -245,7 +211,7 @@ public class ChatActivity extends AppCompatActivity {
                         recordAudio ();
                    }
 
-                }
+                }//for audio chat---
 
                 else if(event.getAction ()==MotionEvent.ACTION_UP) {
                     chatMessage.setVisibility ( View.VISIBLE );
@@ -259,9 +225,37 @@ public class ChatActivity extends AppCompatActivity {
             }
         } );
 
+         loadUserStatusTopBar ();
          loadMessages ();
          seenMessage();
+         onTopBarMenu ();
     }//oncreate mehtod end
+
+
+
+    public void onTopBarMenu( ) {
+        toolbar.setOnMenuItemClickListener ( new Toolbar.OnMenuItemClickListener () {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId ()) {
+                    case R.id.favorite:
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            item.getIcon ().setTint ( R.drawable.selector );
+                        }
+                        break;
+
+                }
+
+
+
+
+                return false;
+            }
+        } );
+    }
+
+
+
 
     //watching message empty or not
     private TextWatcher textWatcher = new TextWatcher () {
@@ -277,21 +271,72 @@ public class ChatActivity extends AppCompatActivity {
             if(!message.isEmpty ()) {
                 chatAudioBtn.setVisibility ( View.GONE );
                 chatSendBtn.setVisibility ( View.VISIBLE );
+                db.collection ( "Users" ).document (userId).update ( "userStatus","typing.." );
             }
             else{
                 chatAudioBtn.setVisibility ( View.VISIBLE );
                 chatSendBtn.setVisibility ( View.GONE );
+                db.collection ( "Users" ).document (userId).update ( "userStatus","online" );
             }
 
         }
         @Override
         public void afterTextChanged(Editable s) {
 
+
         }
     };
     //watching message empty or not
 
 
+
+
+    //loading user Information to top bar---
+    public void loadUserStatusTopBar() {
+
+        db.collection ( "Users" ).document (id).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (e == null) {
+                    String nickName = documentSnapshot.getString ( "nickName" );
+                    if (nickName != null) {
+                        chatWithName.setText ( nickName );
+                        hisName = nickName;
+                    }
+                    String profilePic = documentSnapshot.getString ( "ProfilePic1" );
+                    if(profilePic!=null) {
+                        chatWIthProfileImage = profilePic;
+                        Picasso.get ().load ( profilePic ).fit ().into ( chatWithImage );
+                    }
+                    String status = documentSnapshot.getString ( "userStatus" );
+                    if(status!=null) {
+                        if(status.equals ( "online" )|| status.equals ( "typing.." )) {
+                            chatWithStatus.setText ( status );
+                        }
+                        else{
+                            String lastSeen = documentSnapshot.getString ( "lastSeenTime" );
+                            if(lastSeen!=null) {
+                                chatWithStatus.setText ( lastSeen);
+                            }
+
+                        }
+                    }
+                    String gender = documentSnapshot.getString ( "gender" );
+                    if(gender!=null) {
+                        chatWithGender = gender;
+                    }
+                    String age = documentSnapshot.getString ( "age" );
+                    if(age!=null) {
+                        chatWithAge = age;
+                    }
+                }
+            }
+        } );
+    }    //loading user Information to top bar---
+
+
+
+    //record Audio--
     public void recordAudio() {
         recorder = new MediaRecorder ();
         recorder.setAudioSource ( MediaRecorder.AudioSource.MIC );
@@ -307,8 +352,12 @@ public class ChatActivity extends AppCompatActivity {
 
         recorder.start ();
 
-    }
+    }    //record Audio--
 
+
+
+
+    //stop recording...
     public void stopAudio() {
         try {
             recorder.stop ();
@@ -321,8 +370,12 @@ public class ChatActivity extends AppCompatActivity {
         }
 
 
-    }
+    }//stop recording...
 
+
+
+
+    //sending Audio---
     public void startUploadingAudio() {
 
         Calendar calendar = Calendar.getInstance ();
@@ -395,10 +448,11 @@ public class ChatActivity extends AppCompatActivity {
             }
         } );
     }
+    //sending Audio---
 
 
 
-
+    //loading Messages--
     public void loadMessages() {
 
         chatList = new ArrayList<> (  );
@@ -437,7 +491,11 @@ public class ChatActivity extends AppCompatActivity {
         } );
 
     }
+    //loading Messages--
 
+
+
+    //checking seen message status---
     public void seenMessage() {
         userRefForSeen = database.getReference ("Chats");
 
@@ -459,16 +517,20 @@ public class ChatActivity extends AppCompatActivity {
 
             }
         } );
+    }    //checking seen message status---
 
-    }
 
 
+    //on Pause..
     @Override
     protected void onPause() {
         super.onPause ();
         userRefForSeen.removeEventListener ( seenListener );
-    }
+    }    //on Pause..
 
+
+
+    //sending Chat Message--
     public void sendChatMessage(View view){
 
         notify = true;
@@ -504,8 +566,57 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         } );
-    }
 
+
+
+        final DatabaseReference chatRef1 = FirebaseDatabase.getInstance ().getReference ("ChatList")
+                .child ( userId )
+                .child ( id );
+
+        chatRef1.addValueEventListener ( new ValueEventListener () {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(!dataSnapshot.exists ()) {
+                    chatRef1.child ( "id" ).setValue ( id );
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        } );
+
+
+        final DatabaseReference chatRef2 = FirebaseDatabase.getInstance ().getReference ("ChatList")
+                .child ( id )
+                .child ( userId );
+
+        chatRef2.addValueEventListener ( new ValueEventListener () {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                if(!dataSnapshot.exists ()) {
+                    chatRef2.child ( "id" ).setValue ( userId );
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        } );
+
+
+    }    //sending Chat Message--
+
+
+
+
+    //send Notificaton...
     private void sendNotification(final String id, final String name, final String msg) {
         DatabaseReference allTokens = FirebaseDatabase.getInstance ().getReference ("Tokens");
         Query query  = allTokens.orderByKey ().equalTo ( id );
@@ -542,8 +653,12 @@ public class ChatActivity extends AppCompatActivity {
             }
         } );
 
-    }
+    }    //send Notificaton...
 
+
+
+
+    //send image button click..
     public void sendImage(View view) {
         if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions ( ChatActivity.this,
@@ -554,10 +669,11 @@ public class ChatActivity extends AppCompatActivity {
             CropImage.activity ().start ( ChatActivity.this);
 
         }
-    }
+    }    //send image button click..
 
 
 
+    //on perimisson image--
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult ( requestCode, resultCode, data );
@@ -576,8 +692,12 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         }
-    }
+    }    //on perimisson image--
 
+
+
+
+    //send Image---
     public void uploadImageToStorage() throws IOException {
         Bitmap bitmap = MediaStore.Images.Media.getBitmap ( this.getContentResolver (),selectImageUri );
         ByteArrayOutputStream baos = new ByteArrayOutputStream ();
@@ -648,8 +768,11 @@ public class ChatActivity extends AppCompatActivity {
         } );
 
 
-    }
+    }//send Image---
 
+
+
+    //onStart--
     @Override
     protected void onStart() {
         super.onStart ();
@@ -660,8 +783,11 @@ public class ChatActivity extends AppCompatActivity {
                     update ( "userStatus", "online" );
         }
 
-    }
+    }   //onStart--
 
+
+
+    //onStop--
     @Override
     protected void onStop() {
         super.onStop ();
@@ -674,16 +800,20 @@ public class ChatActivity extends AppCompatActivity {
             db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
             db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
         }
-    }
+    }//onStop--
 
+
+
+    //display profile--
     public void seeProfile(View view) {
         AnotherUserProfileDialog anotherUserProfile = new AnotherUserProfileDialog (hisName,chatWIthProfileImage,chatWithGender,chatWithAge);
         anotherUserProfile.show(getSupportFragmentManager (),"userProfile");
-    }
+    }    //display profile--
 
+
+    //back button ---
     public void chatBack(View view) {
-        startActivity ( new Intent ( getApplicationContext (),Main.class ) );
-        finish ();
-    }
+      finish ();
+    } //back button ---
 
 }

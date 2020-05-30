@@ -52,9 +52,9 @@ public class AnotherUserProfileDialog extends DialogFragment {
 
         builder.setView ( view );
 
-        gender = view.findViewById ( R.id.chat_with_status );
-        profileImage = view.findViewById ( R.id.profile_image_chat );
-        name = view.findViewById ( R.id.chat_with_name );
+        gender = view.findViewById ( R.id.another_user_gender );
+        profileImage = view.findViewById ( R.id.another_user_profilePic );
+        name = view.findViewById ( R.id.another_user_name );
 
         mAUth = FirebaseAuth.getInstance ();
         db = FirebaseFirestore.getInstance ();
@@ -72,6 +72,9 @@ public class AnotherUserProfileDialog extends DialogFragment {
     public void loadProfile() {
        gender.setText ( chatWIthgender +" (" + age +")" );
        name.setText ( chatWithname );
-        Picasso.get ().load ( profileImageUrl ).fit ().into ( profileImage );
+       if(!profileImageUrl.equals ( "" ) || !profileImageUrl.isEmpty ()) {
+           Picasso.get ().load ( profileImageUrl ).fit ().into ( profileImage );
+       }
+
     }
 }

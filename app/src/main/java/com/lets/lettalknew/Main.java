@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.media.Image;
@@ -19,8 +20,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -65,6 +68,10 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
 
 
      RoundedImageView roundedImageView;
+
+    private MaterialToolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
@@ -77,6 +84,18 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         userId = user.getUid ();
 
         documentReference = db.collection ( "Users" ).document (userId);
+
+        tabLayout = (TabLayout) findViewById ( R.id.tab_layout );
+
+        viewPager  = findViewById ( R.id.view_pager );
+
+        toolbar = findViewById ( R.id.toolBar );
+
+        setSupportActionBar ( toolbar );
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        setUpViewPager ( viewPager );
+
+        tabLayout.setupWithViewPager ( viewPager );
 
         final DrawerLayout drawerLayout = findViewById ( R.id.drawer_layout );
 
@@ -136,7 +155,7 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
 
         /**chatList View**/
 
-        chatListView = findViewById ( R.id.chatListView );
+
 
         userProfileImage  = new ArrayList<> (  );
         userProfileLastMessage = new ArrayList<> (  );
@@ -316,5 +335,16 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         flag = 0;
 
     }
+
+
+
+    private void setUpViewPager(ViewPager viewPager) {
+        PageAdapter pageAdapter = new PageAdapter ( getSupportFragmentManager () );
+
+        pageAdapter.addFragment ( new PreviousChats (), "TALKS" );
+        pageAdapter.addFragment ( new Favourites (),"FAVORITES" );
+        viewPager.setAdapter ( pageAdapter );
+    }
+
 
 }
