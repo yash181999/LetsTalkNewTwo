@@ -94,6 +94,7 @@ public class PreviousChats extends Fragment {
 
 
 
+
         return view;
     }
 
@@ -102,7 +103,9 @@ public class PreviousChats extends Fragment {
         databaseReference.addValueEventListener ( new ValueEventListener () {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String theLastMessage = "default";
+                String theLastMessage = null;
+                String theLastPhoto = null ;
+                String theLastAudio = null ;
 
                 for(DataSnapshot ds : dataSnapshot.getChildren ()) {
                     ModalChat chat = ds.getValue (ModalChat.class);
@@ -115,16 +118,34 @@ public class PreviousChats extends Fragment {
                         continue;
                     }
                     if(chat.getReceiver ().equals (user.getUid ()) &&
-                            chat.getSender ().equals ( userId) || chat.getReceiver ().equals ( userId ) && chat.getSender ().equals ( user.getUid () )) {
+                            chat.getSender ().equals ( userId) ||
+                            chat.getReceiver ().equals ( userId ) &&
+                                    chat.getSender ().equals ( user.getUid () )) {
 
                           theLastMessage = chat.getMessage ();
+                          theLastPhoto = chat.getImage ();
+                          theLastAudio = chat.getAudio ();
 
                     }
 
                 }
 
-                adapterChatList.setLastMessageMap ( userId,theLastMessage );
-                adapterChatList.notifyDataSetChanged ();
+                if(theLastAudio!=null) {
+
+                    adapterChatList.setLastMessageMap ( userId,"Audio" );
+                    adapterChatList.notifyDataSetChanged ();
+                }
+
+                else if(theLastMessage!=null) {
+
+                    adapterChatList.setLastMessageMap ( userId,theLastMessage );
+                    adapterChatList.notifyDataSetChanged ();
+                }
+                else if(theLastPhoto!=null){
+                    adapterChatList.setLastMessageMap ( userId,"Photo" );
+                    adapterChatList.notifyDataSetChanged ();
+                }
+
             }
 
             @Override
@@ -144,27 +165,25 @@ public class PreviousChats extends Fragment {
 
                     userList.clear ();
                     for(DocumentSnapshot dataSnapshot : queryDocumentSnapshots.getDocuments ())  {
+
                         ModalUser modalUser = (ModalUser) dataSnapshot.toObject ( ModalUser.class );
                         for(ModalChatList chatList : chatlistList) {
                             if(modalUser.getuId () != null && modalUser.getuId ().equals ( chatList.getId () )) {
                                 userList.add ( modalUser );
                                 break;
                             }
-
                         }
-
                         adapterChatList = new AdapterChatList ( getContext (),userList);
 
                         recyclerView.setAdapter ( adapterChatList );
 
-
                         for(int i=0; i<userList.size ();i++) {
                             lastMessage(userList.get ( i ).getuId ());
                         }
-
                     }
-
                 }
+
+
             }
         } );
     }

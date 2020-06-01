@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:id="@+id/root_view"
     android:background="@color/colorBack"
     tools:context=".ChatActivity">
 
@@ -71,7 +72,7 @@
                     android:paddingLeft="10dp"
                     android:text=""
                     android:textColor="@color/colorWhite"
-                    android:textSize="14sp">
+                    android:textSize="10sp">
 
                 </TextView>
 
@@ -128,7 +129,7 @@
 
             </ImageView>
 
-            <EditText
+            <hani.momanii.supernova_emoji_library.Helper.EmojiconEditText
                 android:id="@+id/chat_message"
                 android:layout_width="0dp"
                 android:hint="Type a message"
@@ -138,7 +139,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/chat_camera"
                 app:layout_constraintStart_toEndOf="@+id/emojy"
-                app:layout_constraintTop_toTopOf="parent"></EditText>
+                app:layout_constraintTop_toTopOf="parent"></hani.momanii.supernova_emoji_library.Helper.EmojiconEditText>
 
             <ImageView
                 android:onClick="sendImage"

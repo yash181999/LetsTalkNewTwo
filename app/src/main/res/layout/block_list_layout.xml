@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:padding="10dp"
@@ -47,6 +47,7 @@
 
 
         <LinearLayout
+            android:layout_gravity="center"
             android:padding="5dp"
             android:orientation="vertical"
             android:layout_width="150dp"
@@ -54,6 +55,8 @@
 
 
             <TextView
+                android:layout_gravity="center"
+                android:gravity="center"
                 android:textStyle="bold"
                 android:id="@+id/chat_profile_name"
                 android:textSize="16sp"
@@ -64,37 +67,24 @@
 
             </TextView>
 
-            <TextView
-                android:id="@+id/chat_profile_last_message"
-                android:textSize="12sp"
-                android:textColor="@color/colorBlack"
-                android:text="hi"
-                android:maxLines="1"
-                android:layout_width="150dp"
-                android:layout_height="20dp">
-
-            </TextView>
 
 
 
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <TextView
-            android:id="@+id/chat_profile_status"
-            android:layout_gravity="right"
-            android:gravity="right"
-            android:text="22/5/13"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
 
-        </TextView>
+        <Button
+            android:layout_marginLeft="40dp"
+            android:textColor="@color/colorWhite"
+            android:text="Remove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/orange"
+           >
 
-        </LinearLayout>
+        </Button>
 
     </LinearLayout>
+
 
 </LinearLayout>

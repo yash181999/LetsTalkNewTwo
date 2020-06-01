@@ -112,18 +112,21 @@
 <!--        </LinearLayout>-->
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            style="@style/Widget.MaterialComponents.FloatingActionButton"
             android:id="@+id/search_random_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorLight"
+            android:backgroundTint="@color/orange"
             android:onClick="searchRandomUser"
-            android:src="@drawable/ic_search_black_24dp"
+            app:tint = "@color/colorWhite"
+            app:srcCompat="@drawable/ic_search_black_24dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.954"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.974">
+            app:layout_constraintVertical_bias="0.974"
+            tools:ignore="VectorDrawableCompat">
 
         </com.google.android.material.floatingactionbutton.FloatingActionButton>
 

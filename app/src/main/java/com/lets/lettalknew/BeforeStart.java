@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +35,8 @@ public class BeforeStart extends AppCompatActivity {
     DocumentReference documentReference;
     String userId;
 
+    ProgressBar progressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
@@ -43,10 +46,13 @@ public class BeforeStart extends AppCompatActivity {
         checkBoxTime = (CheckBox) findViewById ( R.id.check_box_good );
         checkBoxMan = (CheckBox) findViewById ( R.id.check_box_men );
         checkWarningText = (TextView) findViewById ( R.id.check_warning_text);
+        talkBtn = findViewById ( R.id.talk_btn );
 
         mAuth = FirebaseAuth.getInstance ();
         FirebaseUser user = mAuth.getCurrentUser ();
         userId = user.getUid ();
+
+        progressBar = findViewById ( R.id.before_start_progressbar );
 
         db=  FirebaseFirestore.getInstance ();
         documentReference = db.collection ( "Users" ).document (userId);
@@ -57,15 +63,21 @@ public class BeforeStart extends AppCompatActivity {
 
     public void startTalking(View view) {
 
+
         if(checkBoxTime.isChecked () && checkBoxDog.isChecked () && checkBoxMan.isChecked ()) {
             checkWarningText.setVisibility ( View.GONE );
 
+            talkBtn.setVisibility ( View.GONE );
+            progressBar.setVisibility ( View.VISIBLE );
 
-            ModalUser userDetails = new ModalUser ("Anonymous","Male","18","Women","18-45","English",userId,"online",null);
+            ModalUser userDetails = new ModalUser ("Anonymous","Male","18","Women","18-45","English",userId,"online",null,null);
 
             documentReference.set ( userDetails ).addOnSuccessListener ( new OnSuccessListener<Void> () {
                 @Override
                 public void onSuccess(Void aVoid) {
+
+                    progressBar.setVisibility ( View.GONE );
+
 
                     startActivity(new Intent ( getApplicationContext (),Main.class ) );
                     finish ();

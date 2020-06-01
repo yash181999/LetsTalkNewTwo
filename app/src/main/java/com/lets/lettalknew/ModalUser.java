@@ -3,7 +3,7 @@ package com.lets.lettalknew;
 public class ModalUser {
 
     String nickName,gender,age,lookingForGender,lookingForAgeRange,lookingForLanguage,uId;
-    String userStatus,ProfilePic1;
+    String userStatus,profilePic1,lastSeenTime;
 
     public ModalUser(){}
 
@@ -15,8 +15,16 @@ public class ModalUser {
         this.uId = uId;
     }
 
+    public String getLastSeenTime() {
+        return lastSeenTime;
+    }
+
+    public void setLastSeenTime(String lastSeenTime) {
+        this.lastSeenTime = lastSeenTime;
+    }
+
     public ModalUser(String nickName, String gender, String age, String lookingForGender, String lookingForAgeRange, String lookingForLanguage, String uId,
-                     String userStatus, String ProfilePic1) {
+                     String userStatus, String ProfilePic1, String lastSeenTime) {
         this.nickName = nickName;
         this.gender = gender;
         this.age = age;
@@ -24,8 +32,9 @@ public class ModalUser {
         this.lookingForAgeRange = lookingForAgeRange;
         this.lookingForLanguage = lookingForLanguage;
         this.userStatus = userStatus;
-        this.ProfilePic1 = ProfilePic1;
+        this.profilePic1 = ProfilePic1;
         this.uId = uId;
+        this.lastSeenTime = lastSeenTime;
 
 
 
@@ -89,11 +98,11 @@ public class ModalUser {
 
 
     public String getProfilePic1() {
-        return ProfilePic1;
+        return profilePic1;
     }
 
     public void setProfilePic1(String ProfilePic1) {
-        this.ProfilePic1 = ProfilePic1;
+        this.profilePic1 = ProfilePic1;
     }
 
 

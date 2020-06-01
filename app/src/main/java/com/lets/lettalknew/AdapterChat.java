@@ -1,6 +1,7 @@
 package com.lets.lettalknew;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -24,6 +25,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
@@ -32,13 +34,15 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
     private static final int MSG_TYPE_RIGHT = 1;
     Context context;
     List<ModalChat> chatList;
+    ArrayList<String> lastSeenList;
 
 
     FirebaseUser user;
 
-    public AdapterChat(Context context, List<ModalChat> chatList) {
+    public AdapterChat(Context context, List<ModalChat> chatList,ArrayList<String> lastSeenList) {
         this.context = context;
         this.chatList = chatList;
+        this.lastSeenList = lastSeenList;
     }
 
     @NonNull
@@ -64,9 +68,13 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, int position) {
       String message  = chatList.get ( position ).getMessage ();
-      String image = chatList.get ( position ).getImage ();
+      final String image = chatList.get ( position ).getImage ();
       String time= chatList.get ( position ).getTime ();
       final String audio = chatList.get ( position ).getAudio ();
+
+
+
+
       if(message!=null) {
           holder.messageText.setText ( message );
           holder.textMsgTime.setText ( time );
@@ -74,14 +82,18 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
           holder.imageMsgLayout.setVisibility ( View.GONE );
           holder.audioMsgLayout.setVisibility ( View.GONE );
 
-          if(chatList.get ( position).isSeen == true) {
-              holder.textMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
 
+          String isSeen = lastSeenList.get ( position);
+          if(isSeen.equals ( "true" )) {
+              holder.textMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
           }
-          else{
+          else {
               holder.textMsgTicks.setImageResource ( R.drawable.done_all_black );
           }
+
+
       }
+
 
       if(audio!=null) {
           holder.audioMsgTime.setText ( time );
@@ -104,11 +116,13 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
               }
           } );
 
-          if(chatList.get ( position ).isSeen==true) {
-              holder.textMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
+          String isSeen = lastSeenList.get ( position);
+
+          if(isSeen.equals ( "true" )) {
+              holder.audioMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
           }
           else {
-              holder.textMsgTicks.setImageResource ( R.drawable.done_all_black );
+              holder.audioMsgTicks.setImageResource ( R.drawable.done_all_black );
           }
       }
 
@@ -122,14 +136,24 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
           holder.textMsgLayout.setVisibility ( View.GONE );
           holder.audioMsgLayout.setVisibility ( View.GONE );
 
+          String isSeen = lastSeenList.get ( position);
 
-              if(chatList.get ( position ).isSeen == true) {
-                  holder.audioMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
+              if(isSeen.equals ( "true" )) {
+                  holder.imageMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
               }
               else{
-                  holder.audioMsgTicks.setImageResource ( R.drawable.done_all_black );
+                  holder.imageMsgTicks.setImageResource ( R.drawable.done_all_black );
               }
       }
+
+      holder.imageMsgLayout.setOnClickListener ( new View.OnClickListener () {
+          @Override
+          public void onClick(View v) {
+              Intent intent = new Intent (context,ShowImage.class );
+              intent.putExtra ( "imageUrl",image );
+              context.startActivity ( intent );
+          }
+      } );
 
     }
 
@@ -248,13 +272,10 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
                         }
                     } );
 
-
-
                 }
 
 
         public void changeSeekbar() {
-
 
             if(mediaPlayer.isPlaying () && mediaPlayer!=null) {
                 seekBar.setProgress ((int ) (((float) mediaPlayer.getCurrentPosition ()/ mediaPlayer.getDuration ())*100) );

@@ -8,8 +8,11 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -43,7 +46,8 @@ import java.util.Calendar;
 import java.util.Random;
 import java.util.Set;
 
-public class Main extends AppCompatActivity implements LookingForGender.LookingForGenderListener,LookingForAge.LookingForAgeListener{
+public class Main extends AppCompatActivity implements
+        LookingForGender.LookingForGenderListener,LookingForAge.LookingForAgeListener{
      FirebaseAuth mAuth;
      ImageView editProfileIcon;
      NavigationView navigationView;
@@ -56,11 +60,7 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
 
      private ListView chatListView;
 
-     private ArrayList<String> userProfileImage,
-             userProfileName,userProfileLastMessage,
-             userProfileActivity,userProfileDate;
 
-     private LastChatList chatAdapter;
 
      String userStatus;
 
@@ -94,6 +94,8 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         setSupportActionBar ( toolbar );
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         setUpViewPager ( viewPager );
+
+        checkConnection();
 
         tabLayout.setupWithViewPager ( viewPager );
 
@@ -153,28 +155,10 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         } );
         /**navigation View**/
 
-        /**chatList View**/
-
-
-
-        userProfileImage  = new ArrayList<> (  );
-        userProfileLastMessage = new ArrayList<> (  );
-        userProfileActivity = new ArrayList<> (  );
-        userProfileImage = new ArrayList<> (  );
-        userProfileDate = new ArrayList<> (  );
-
-
-        /**chatList View**/
 
                     db.collection ( "Users" ).
                     document ( mAuth.getCurrentUser ().getUid () ).
                     update ( "userStatus", "online" );
-                    populateLastChatList ();
-    }
-
-    public void populateLastChatList() {
-
-
 
     }
 
@@ -189,7 +173,7 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if(e==null) {
-                   String profilePic =  documentSnapshot.getString ("ProfilePic1");
+                   String profilePic =  documentSnapshot.getString ("profilePic1");
                     if (profilePic != null) {
 
                         Picasso.get ().
@@ -255,6 +239,7 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
     @Override
     protected void onStart() {
         super.onStart ();
+        checkConnection ();
 
         if(mAuth.getCurrentUser ()!=null) {
             userStatus = "online";
@@ -265,19 +250,20 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
 
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy ();
-        userStatus = "offline";
-        if(mAuth.getCurrentUser ()!=null) {
-            String currentDate;
-            Calendar calendar = Calendar.getInstance ();
-            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
-            currentDate = currentDateTime.format ( calendar.getTime () );
-            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
-            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
-        }
-    }
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy ();
+//        checkConnection ();
+//        userStatus = "offline";
+//        if(mAuth.getCurrentUser ()!=null) {
+//            String currentDate;
+//            Calendar calendar = Calendar.getInstance ();
+//            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+//            currentDate = currentDateTime.format ( calendar.getTime () );
+//            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+//            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
+//        }
+//    }
 
     @Override
     protected void onPause() {
@@ -300,14 +286,13 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
                     ArrayList<String> randomId = new ArrayList<> (  );
 
                     for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments ()) {
+
                         if (!documentSnapshot.getId ().equals (userId  )) {
 
                             randomId.add ( documentSnapshot.getId () );
 
                         }
                     }
-
-
 
 
                         String idRandom = randomId.get ( new Random (  ).nextInt (randomId.size ()) ) ;
@@ -320,8 +305,6 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
                         Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
                         intent.putExtra ( "id", idRandom );
                         startActivity ( intent );
-                        Toast.makeText ( Main.this, idRandom, Toast.LENGTH_SHORT ).show ();
-
 
                     }
                 }
@@ -344,6 +327,36 @@ public class Main extends AppCompatActivity implements LookingForGender.LookingF
         pageAdapter.addFragment ( new PreviousChats (), "TALKS" );
         pageAdapter.addFragment ( new Favourites (),"FAVORITES" );
         viewPager.setAdapter ( pageAdapter );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume ();
+        checkConnection ();
+    }
+
+    public void checkConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext ().getSystemService ( Context.CONNECTIVITY_SERVICE );
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo ();
+
+        if(activeNetwork!=null) {
+            if(activeNetwork.getType () == ConnectivityManager.TYPE_WIFI) {
+
+            }
+
+            else if(activeNetwork.getType ()==ConnectivityManager.TYPE_MOBILE) {
+
+            }
+            else {
+                Toast.makeText ( this, "not internet connection", Toast.LENGTH_SHORT ).show ();
+            }
+
+        }
+        else {
+            Toast.makeText ( this, "not internet connection", Toast.LENGTH_SHORT ).show ();
+        }
+
     }
 
 

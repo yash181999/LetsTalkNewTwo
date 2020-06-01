@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,10 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaRecorder;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -59,6 +63,7 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -70,6 +75,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
+import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -85,18 +92,21 @@ public class ChatActivity extends AppCompatActivity {
 
     TextView chatWithName,chatWithStatus,textRecording;
     ImageView chatWithImage;
-    EditText chatMessage;
+    EmojiconEditText chatMessage;
     Button chatAudioBtn, chatSendBtn;
+
+    List<ArrayList> seenList;
 
     String id;
 
     FirebaseDatabase database;
 
-    private LastChatList chatAdapter;
 
     List<ModalChat> chatList;
 
     AdapterChat adapterChat;
+
+    ArrayList<String> lastSeenList;
 
     private static final int REQUEST_CODE_STORAGE_PERMISSION = 1;
 
@@ -124,6 +134,10 @@ public class ChatActivity extends AppCompatActivity {
     NotificationApiService notificationApiService;
     boolean notify = false;
 
+    EmojIconActions emojIconActions;
+
+    ConstraintLayout rootView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,9 +162,13 @@ public class ChatActivity extends AppCompatActivity {
         sentMessage = new ArrayList<> (  );
         receivedMessage = new ArrayList<> (  );
 
+        rootView = findViewById ( R.id.root_view );
+
         chatWithStatus = findViewById ( R.id.chat_with_status );
 
         chatListView =(RecyclerView) findViewById ( R.id.chat_list_view );
+
+        seenList = new ArrayList<> (  );
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager ( this );
 
@@ -174,7 +192,26 @@ public class ChatActivity extends AppCompatActivity {
 
         database = FirebaseDatabase.getInstance();
 
+        lastSeenList = new ArrayList<> (  );
+
         id = getIntent ().getStringExtra ("id");
+
+
+        emojIconActions = new EmojIconActions (getApplicationContext () ,rootView , (EmojiconEditText) chatMessage,emojy );
+
+        emojIconActions.ShowEmojIcon ();
+
+        emojIconActions.setKeyboardListener(new EmojIconActions.KeyboardListener() {
+            @Override
+            public void onKeyboardOpen() {
+
+            }
+
+            @Override
+            public void onKeyboardClose() {
+
+            }
+        });
 
 
         //for audio chat ...
@@ -225,9 +262,29 @@ public class ChatActivity extends AppCompatActivity {
             }
         } );
 
+
+        FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId ).child ( id )
+                .addListenerForSingleValueEvent ( new ValueEventListener () {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.getValue () != null) {
+                           toolbar.getMenu ().getItem ( 0 ).setIcon ( R.drawable.heart );
+                        }
+                        else{
+                           toolbar.getMenu ().getItem (0 ).setIcon ( R.drawable.ic_favorite_border_black_24dp );
+
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                } );
+
          loadUserStatusTopBar ();
-         loadMessages ();
          seenMessage();
+         loadMessages ();
          onTopBarMenu ();
     }//oncreate mehtod end
 
@@ -236,25 +293,90 @@ public class ChatActivity extends AppCompatActivity {
     public void onTopBarMenu( ) {
         toolbar.setOnMenuItemClickListener ( new Toolbar.OnMenuItemClickListener () {
             @Override
-            public boolean onMenuItemClick(MenuItem item) {
+            public boolean onMenuItemClick(final MenuItem item) {
                 switch (item.getItemId ()) {
                     case R.id.favorite:
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            item.getIcon ().setTint ( R.drawable.selector );
-                        }
-                        break;
+
+                        FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId ).child ( id )
+                                .addListenerForSingleValueEvent ( new ValueEventListener () {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if(dataSnapshot.getValue () == null) {
+                                            toolbar.getMenu ().getItem ( 0).setIcon ( R.drawable.heart );
+                                            addToFavorites ();
+                                        }
+                                    }
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                } );
+
+                    case R.id.block_user:
+                        blockUser();
 
                 }
-
-
-
 
                 return false;
             }
         } );
     }
 
+    public void blockUser() {
+        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
+                .child ( mAuth.getCurrentUser ().getUid () )
+                .child ( id ).setValue ( "id",id )
+                .addOnSuccessListener ( new OnSuccessListener<Void> () {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText ( ChatActivity.this, "userBlocked", Toast.LENGTH_SHORT ).show ();
 
+                    }
+                } );
+    }
+
+//    public void removeChats() {
+//        FirebaseDatabase.getInstance ().getReference ().child ( "Chats" ).addValueEventListener ( new ValueEventListener () {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//               for(DataSnapshot ds: dataSnapshot.getChildren ())   {
+//                   ModalChat modalChat = ds.getValue (ModalChat.class);
+//                   if(modalChat.getReceiver ()!=null) {
+//                       if(modalChat.getReceiver ().equals ( id )) {
+//                           FirebaseDatabase.getInstance ().getReference ().child ( "Chats" ).removeValue ();
+//                           FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( mAuth.getCurrentUser ().getUid () )
+//                                   .child ( id ).removeValue ();
+//                           FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( id ).
+//                                   child ( mAuth.getCurrentUser ().getUid () )
+//                                   .removeValue ();
+//                       }
+//                   }
+//               }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        } );
+//    }
+
+    public void addToFavorites() {
+
+        Map<String, String> favoriteMap = new HashMap<> (  );
+        favoriteMap.put ( "id",id );
+            FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId ).
+                    child ( id ).setValue ( favoriteMap ).addOnCompleteListener ( new OnCompleteListener<Void> () {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful ()) {
+                        Toast.makeText ( ChatActivity.this, "added to favorites", Toast.LENGTH_SHORT ).show ();
+                    }
+                }
+            } );
+
+
+    }
 
 
     //watching message empty or not
@@ -408,7 +530,7 @@ public class ChatActivity extends AppCompatActivity {
                         imageMessage.put ( "sender",userId );
                         imageMessage.put ( "receiver",id );
                         imageMessage.put("time",currentDate);
-                        imageMessage.put ( "isSeen",false );
+                        imageMessage.put ( "isSeen","false" );
 
                         DatabaseReference databaseReference = database.getReference ();
 
@@ -463,18 +585,24 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 chatList.clear ();
+                lastSeenList.clear ();
                 for(DataSnapshot ds : dataSnapshot.getChildren ()) {
                     ModalChat chat = ds.getValue (ModalChat.class);
+
+
 
                     if( (chat.getReceiver ().equals (userId) && chat.getSender ().equals (id) ) ||
                             ( chat.getSender ().equals (userId) && chat.getReceiver ().equals (id)) ) {
 
                         chatList.add ( chat );
 
+                        String lastSeen = ds.child ( "isSeen" ).getValue (String.class);
+                        lastSeenList.add ( lastSeen );
+
                     }
 
                     adapterChat = new AdapterChat ( ChatActivity.this,
-                            chatList);
+                            chatList,lastSeenList);
 
                     adapterChat.notifyDataSetChanged ();
 
@@ -506,7 +634,7 @@ public class ChatActivity extends AppCompatActivity {
                    ModalChat chat = ds.getValue (ModalChat.class);
                    if(chat.getReceiver ().equals ( userId ) && chat.getSender ().equals (id) ) {
                         HashMap<String , Object > hasSeenHasMap = new HashMap<> (  );
-                        hasSeenHasMap.put ( "isSeen",true );
+                        hasSeenHasMap.put ( "isSeen","true" );
                         ds.getRef ().updateChildren ( hasSeenHasMap );
                    }
                }
@@ -525,8 +653,20 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause ();
+        checkConnection ();
         userRefForSeen.removeEventListener ( seenListener );
+
+        if(mAuth.getCurrentUser ()!=null) {
+            String currentDate;
+            Calendar calendar = Calendar.getInstance ();
+            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+            currentDate = currentDateTime.format ( calendar.getTime () );
+            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "paused" );
+        }
     }    //on Pause..
+
+
 
 
 
@@ -544,7 +684,7 @@ public class ChatActivity extends AppCompatActivity {
         messages.put ( "receiver", id );
         messages.put ( "message",message );
         messages.put("time",currentDate);
-        messages.put ( "isSeen",false );
+        messages.put ( "isSeen","false" );
 
 
         DatabaseReference databaseReference = database.getReference ();
@@ -726,7 +866,7 @@ public class ChatActivity extends AppCompatActivity {
                       imageMessage.put ( "sender",userId );
                       imageMessage.put ( "receiver",id );
                       imageMessage.put("time",currentDate);
-                      imageMessage.put ( "isSeen",false );
+                      imageMessage.put ( "isSeen","false" );
 
 
                         DatabaseReference databaseReference = database.getReference ();
@@ -772,36 +912,40 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
+
     //onStart--
     @Override
     protected void onStart() {
         super.onStart ();
-
-        if(mAuth.getCurrentUser ()!=null) {
-            db.collection ( "Users" ).
-                    document ( mAuth.getCurrentUser ().getUid () ).
-                    update ( "userStatus", "online" );
-        }
-
-    }   //onStart--
-
-
-
-    //onStop--
-    @Override
-    protected void onStop() {
-        super.onStop ();
-
+        checkConnection ();
         if(mAuth.getCurrentUser ()!=null) {
             String currentDate;
             Calendar calendar = Calendar.getInstance ();
             SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
             currentDate = currentDateTime.format ( calendar.getTime () );
             db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
-            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
+            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "online" );
         }
-    }//onStop--
 
+    }   //onStart--
+
+
+//
+//    //onStop--
+//    @Override
+//    protected void onStop() {
+//        super.onStop ();
+//
+//        if(mAuth.getCurrentUser ()!=null) {
+//            String currentDate;
+//            Calendar calendar = Calendar.getInstance ();
+//            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+//            currentDate = currentDateTime.format ( calendar.getTime () );
+//            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+//            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
+//        }
+//    }//onStop--
+//
 
 
     //display profile--
@@ -810,10 +954,47 @@ public class ChatActivity extends AppCompatActivity {
         anotherUserProfile.show(getSupportFragmentManager (),"userProfile");
     }    //display profile--
 
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy ();
+//        if(mAuth.getCurrentUser ()!=null) {
+//            String currentDate;
+//            Calendar calendar = Calendar.getInstance ();
+//            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+//            currentDate = currentDateTime.format ( calendar.getTime () );
+//            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+//            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
+//        }
+//
+//    }
 
     //back button ---
     public void chatBack(View view) {
       finish ();
     } //back button ---
+
+    public void checkConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext ().getSystemService ( Context.CONNECTIVITY_SERVICE );
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo ();
+
+        if(activeNetwork!=null) {
+            if(activeNetwork.getType () == ConnectivityManager.TYPE_WIFI) {
+
+            }
+
+            else if(activeNetwork.getType ()==ConnectivityManager.TYPE_MOBILE) {
+
+            }
+            else {
+                Toast.makeText ( this, "no internet connection", Toast.LENGTH_SHORT ).show ();
+            }
+
+        }
+        else {
+            Toast.makeText ( this, "not internet connection", Toast.LENGTH_SHORT ).show ();
+        }
+
+    }
 
 }

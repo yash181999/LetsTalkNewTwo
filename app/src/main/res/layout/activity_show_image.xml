@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BlockedUsers">
+    tools:context=".ShowImage">
 
 
     <com.google.android.material.appbar.AppBarLayout
@@ -18,7 +18,7 @@
         <!--            Tool BAR-->
 
         <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topAppBar"
+            android:id="@+id/tool_bar"
             style="@style/Widget.MaterialComponents.Toolbar.Primary"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
@@ -26,45 +26,43 @@
             app:layout_scrollFlags="scroll|enterAlways|snap">
 
             <ImageView
-                android:padding="10dp"
-                android:id="@+id/block_back"
+                android:id="@+id/chat_back"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="blockBack"
+                android:onClick="imageBack"
                 android:src="@drawable/ic_arrow_back_black_24dp">
 
             </ImageView>
 
-            <TextView
 
-                android:layout_marginLeft="20dp"
-                android:id="@+id/chat_with_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="20dp"
-                android:text="Blocked Users"
-                android:textColor="@color/colorWhite"
-                android:textSize="18sp">
 
-            </TextView>
+                <TextView
+                    android:id="@+id/chat_with_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="10dp"
+                    android:text="Photo"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="18sp">
+
+                </TextView>
+
 
 
         </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/block_recycler_list"
+    <ImageView
+        android:id="@+id/photo"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="300dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
-    </androidx.recyclerview.widget.RecyclerView>
+    </ImageView>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

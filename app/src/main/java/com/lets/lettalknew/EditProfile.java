@@ -9,9 +9,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -68,7 +71,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
     ConstraintLayout constraintLayout;
     String userId;
 
-    boolean imageAvailable = false;
+    boolean imageAvailable;
 
     ImageView addIconOne, addIconTwo, addIconThree, addIconFour, addIconFive,addIconSix;
     ImageView removeIconOne, removeIconTwo, removeIconThree,removeIconFour, removeIconFive, removeIconSix;
@@ -113,7 +116,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
         removeIconTwo = findViewById ( R.id.remove_icon_two );
         removeIconThree = findViewById ( R.id.remove_icon_three );
         removeIconFour = findViewById ( R.id.remove_icon_four );
-        removeIconFive = findViewById ( R.id.remove_icon_six );
+        removeIconFive = findViewById ( R.id.remove_icon_five );
         removeIconSix = findViewById ( R.id.remove_icon_six );
 
 
@@ -133,6 +136,8 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
 
         loadImagesFromFireStore ();
 
+        checkConnection ();
+
                     db.collection ( "Users" ).
                     document ( mAuth.getCurrentUser ().getUid () ).
                     update ( "userStatus", "online" );
@@ -151,6 +156,8 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
 //            Picasso.get().load(selectImageUrl.toString ()).centerInside ().resize ( 500,500 ).into(profilePickOne);
         }
     }
+
+
 
     public void pickImageTwo(View view) {
         if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED) {
@@ -212,26 +219,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult ( requestCode, permissions, grantResults );
-        if(requestCode == REQUEST_CODE_STORAGE_PERMISSION && grantResults.length>0) {
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                selectImage();
-            }
-            else{
-                Toast.makeText ( this, "Permission Denied", Toast.LENGTH_SHORT ).show ();
-            }
-        }
-    }
 
-    public void selectImage() {
-         Intent intent = new Intent ( Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI );
-         if (intent.resolveActivity ( getPackageManager () ) != null ) {
-             startActivityForResult ( intent,REQUEST_CODE_SELECT_IMAGE );
-        }
-
-    }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -241,8 +229,6 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
             CropImage.ActivityResult result = CropImage.getActivityResult ( data );
             if(resultCode == RESULT_OK) {
                selectImageUrl = result.getUri ();
-
-
 
                if(flag==1) {
                     profileImage[0] = selectImageUrl;
@@ -281,7 +267,6 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
                    profileImage[3] = selectImageUrl;
 
                   ExifTransformation exifTransformation = new ExifTransformation ( this,selectImageUrl );
-                  profileImage[3]  = exifTransformation.uri;
 
                    Picasso.get()
                            .load(profileImage[3].toString ())
@@ -327,111 +312,181 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
 
     }
     String imageUrl;
-    public  boolean getImageUrl(String name) {
-        final String imageName = name;
-        String userId = mAuth.getCurrentUser ().getUid ();
+
+
+    public void removeImageOne(View view) {
+
+          final String userId = mAuth.getCurrentUser ().getUid ();
+
         documentReference = db.collection ( "Users" ).document (userId);
         documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                 String url = documentSnapshot.getString ( imageName );
-                 if(url!=null) {
-                    imageAvailable = true;
+                String url = documentSnapshot.getString ( "profilePic1" );
+                if(url!=null) {
+                    db.collection ( "Users" ).document ( userId ).
+                            update ( "profilePic1", FieldValue.delete () ).
+                            addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic1" ).delete ();
+                                    addIconOne.setVisibility ( View.VISIBLE );
+                                    removeIconOne.setVisibility ( View.GONE );
+                                    profilePickOne.setImageResource ( R.drawable.dummyprofile );
+                                }
+                            } );
 
-                 }
+
+                }
             }
         } );
-       return imageAvailable;
-    }
 
-    public void removeImageOne(View view) {
-      if(getImageUrl ( "ProfilePic1" ) == true) {
-          String userId = mAuth.getCurrentUser ().getUid ();
-          db.collection ( "Users" ).document ( userId ).update ( "ProfilePic1", FieldValue.delete () );
-          addIconOne.setVisibility ( View.VISIBLE );
-          removeIconOne.setVisibility ( View.GONE );
-          profilePickOne.setImageResource ( R.drawable.dummyprofile );
-      }
-      else{
-          profilePickOne.setImageResource ( R.drawable.dummyprofile );
-          addIconOne.setVisibility ( View.VISIBLE );
-          removeIconOne.setVisibility ( View.GONE );
-      }
     }
 
     public void removeImageTwo(View view) {
-        if(getImageUrl ( "ProfilePic2" ) == true) {
-            String userId = mAuth.getCurrentUser ().getUid ();
-            db.collection ( "Users" ).document ( userId ).update ( "ProfilePic2", FieldValue.delete () );
-            addIconTwo.setVisibility ( View.VISIBLE );
-            removeIconTwo.setVisibility ( View.GONE );
-            profilePickTwo.setImageResource ( R.drawable.dummyprofile );
-        }
-        else{
-            profilePickTwo.setImageResource ( R.drawable.dummyprofile );
-            addIconTwo.setVisibility ( View.VISIBLE );
-            removeIconTwo.setVisibility ( View.GONE );
-        }
+
+
+        final String userId = mAuth.getCurrentUser ().getUid ();
+
+        documentReference = db.collection ( "Users" ).document (userId);
+        documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String url = documentSnapshot.getString ( "profilePic2" );
+                if(url!=null) {
+                    db.collection ( "Users" ).document ( userId ).
+                            update ( "profilePic2", FieldValue.delete () ).
+                            addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic2" ).delete ();
+                                    addIconTwo.setVisibility ( View.VISIBLE );
+                                    removeIconTwo.setVisibility ( View.GONE );
+                                    profilePickTwo.setImageResource ( R.drawable.dummyprofile );
+                                }
+                            } );
+
+
+                }
+            }
+        } );
+
     }
 
     public void removeImageThree(View view) {
-        if(getImageUrl ( "ProfilePic3" ) == true) {
-            String userId = mAuth.getCurrentUser ().getUid ();
-            db.collection ( "Users" ).document ( userId ).update ( "ProfilePic3", FieldValue.delete () );
-            addIconThree.setVisibility ( View.VISIBLE );
-            removeIconThree.setVisibility ( View.GONE );
-            profilePickThree.setImageResource ( R.drawable.dummyprofile );
-        }
-        else{
-            profilePickThree.setImageResource ( R.drawable.dummyprofile );
-            addIconThree.setVisibility ( View.VISIBLE );
-            removeIconThree.setVisibility ( View.GONE );
-        }
+
+
+        final String userId = mAuth.getCurrentUser ().getUid ();
+
+        documentReference = db.collection ( "Users" ).document (userId);
+        documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String url = documentSnapshot.getString ( "profilePic3" );
+                if(url!=null) {
+                    db.collection ( "Users" ).document ( userId ).
+                            update ( "profilePic3", FieldValue.delete () ).
+                            addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic3" ).delete ();
+                                    addIconThree.setVisibility ( View.VISIBLE );
+                                    removeIconThree.setVisibility ( View.GONE );
+                                    profilePickThree.setImageResource ( R.drawable.dummyprofile );
+                                }
+                            } );
+
+
+                }
+            }
+        } );
     }
 
     public void removeImageFour(View view) {
-        if(getImageUrl ( "ProfilePic4" ) == true) {
-            String userId = mAuth.getCurrentUser ().getUid ();
-            db.collection ( "Users" ).document ( userId ).update ( "ProfilePic4", FieldValue.delete () );
-            addIconFour.setVisibility ( View.VISIBLE );
-            removeIconFour.setVisibility ( View.GONE );
-            profilePickFour.setImageResource ( R.drawable.dummyprofile );
-        }
-        else{
-            profilePickFour.setImageResource ( R.drawable.dummyprofile );
-            addIconFour.setVisibility ( View.VISIBLE );
-            removeIconFour.setVisibility ( View.GONE );
-        }
+
+
+        final String userId = mAuth.getCurrentUser ().getUid ();
+
+        documentReference = db.collection ( "Users" ).document (userId);
+        documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String url = documentSnapshot.getString ( "profilePic4" );
+                if(url!=null) {
+                    db.collection ( "Users" ).document ( userId ).
+                            update ( "profilePic4", FieldValue.delete () ).
+                            addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic4" ).delete ();
+                                    addIconFour.setVisibility ( View.VISIBLE );
+                                    removeIconFour.setVisibility ( View.GONE );
+                                    profilePickFour.setImageResource ( R.drawable.dummyprofile );
+                                }
+                            } );
+
+
+                }
+            }
+        } );
     }
 
     public void removeImageFive(View view) {
-        if(getImageUrl ( "ProfilePic5" ) == true) {
-            String userId = mAuth.getCurrentUser ().getUid ();
-            db.collection ( "Users" ).document ( userId ).update ( "ProfilePic5", FieldValue.delete () );
-            addIconFive.setVisibility ( View.VISIBLE );
-            removeIconFive.setVisibility ( View.GONE );
-            profilePickFive.setImageResource ( R.drawable.dummyprofile );
-        }
-        else{
-            profilePickFive.setImageResource ( R.drawable.dummyprofile );
-            addIconFive.setVisibility ( View.VISIBLE );
-            removeIconFive.setVisibility ( View.GONE );
-        }
+
+
+        final String userId = mAuth.getCurrentUser ().getUid ();
+
+        documentReference = db.collection ( "Users" ).document (userId);
+        documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String url = documentSnapshot.getString ( "profilePic5" );
+                if(url!=null) {
+                    db.collection ( "Users" ).document ( userId ).
+                            update ( "profilePic5", FieldValue.delete () ).
+                            addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic5" ).delete ();
+                                    addIconFive.setVisibility ( View.VISIBLE );
+                                    removeIconFive.setVisibility ( View.GONE );
+                                    profilePickFive.setImageResource ( R.drawable.dummyprofile );
+                                }
+                            } );
+
+
+                }
+            }
+        } );
     }
 
     public void removeImageSix(View view) {
-        if(getImageUrl ( "ProfilePic6" ) == true) {
-            String userId = mAuth.getCurrentUser ().getUid ();
-            db.collection ( "Users" ).document ( userId ).update ( "ProfilePic6", FieldValue.delete () );
-            addIconSix.setVisibility ( View.VISIBLE );
-            removeIconSix.setVisibility ( View.GONE );
-            profilePickSix.setImageResource ( R.drawable.dummyprofile );
-        }
-        else{
-            profilePickSix.setImageResource ( R.drawable.dummyprofile );
-            addIconSix.setVisibility ( View.VISIBLE );
-            removeIconSix.setVisibility ( View.GONE );
-        }
+
+
+        final String userId = mAuth.getCurrentUser ().getUid ();
+
+        documentReference = db.collection ( "Users" ).document (userId);
+        documentReference.get (  ).addOnSuccessListener ( new OnSuccessListener<DocumentSnapshot> () {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                String url = documentSnapshot.getString ( "profilePic6" );
+                if(url!=null) {
+                    db.collection ( "Users" ).document ( userId ).
+                            update ( "profilePic6", FieldValue.delete () ).
+                            addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic6" ).delete ();
+                                    addIconSix.setVisibility ( View.VISIBLE );
+                                    removeIconSix.setVisibility ( View.GONE );
+                                    profilePickSix.setImageResource ( R.drawable.dummyprofile );
+                                }
+                            } );
+
+
+                }
+            }
+        } );
     }
 
 
@@ -454,7 +509,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
                 //compressing image size
 
                 storageReference = storage.getReference ().child ( userId ).child ( "ProfilePhotos" ).child ( "ProfilePic" + (i + 1) );
-                final String name = "ProfilePic" + (i+1);
+                final String name = "profilePic" + (i+1);
 
                 UploadTask uploadTask = storageReference.putBytes ( data );
                 uploadTask.addOnSuccessListener ( new OnSuccessListener<UploadTask.TaskSnapshot> () {
@@ -526,7 +581,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 try {
                     if (e == null) {
-                        String urlOne = documentSnapshot.getString ( "ProfilePic1" );
+                        String urlOne = documentSnapshot.getString ( "profilePic1" );
                         if (urlOne != null) {
                             Picasso.get ()
                                     .load ( urlOne.toString () )
@@ -537,7 +592,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
                         }
 
 
-                     String urlTwo  = documentSnapshot.getString ( "ProfilePic2" );
+                     String urlTwo  = documentSnapshot.getString ( "profilePic2" );
 
                      if(urlTwo!=null) {
                          Picasso.get()
@@ -548,7 +603,7 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
                       removeIconTwo.setVisibility ( View.VISIBLE );
                      }
 
-                     String urlThree  = documentSnapshot.getString ( "ProfilePic3" );
+                     String urlThree  = documentSnapshot.getString ( "profilePic3" );
 
                      if(urlThree!=null) {
                          Picasso.get()
@@ -559,35 +614,35 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
                          removeIconThree.setVisibility ( View.VISIBLE );
                   }
 
-                     String urlFour  = documentSnapshot.getString ( "ProfilePic4" );
+                     String urlFour  = documentSnapshot.getString ( "profilePic4" );
 
                         if(urlFour!=null) {
                             Picasso.get()
                                     .load(urlFour.toString ())
                                     .fit ()
-                                    .into(profilePickThree);
+                                    .into(profilePickFour);
                             addIconFour.setVisibility ( View.GONE );
                             removeIconFour.setVisibility ( View.VISIBLE );
                         }
 
-                        String urlFive  = documentSnapshot.getString ( "ProfilePic5" );
+                        String urlFive  = documentSnapshot.getString ( "profilePic5" );
 
                         if(urlFive!=null) {
                             Picasso.get()
                                     .load(urlFive.toString ())
                                     .fit ()
-                                    .into(profilePickThree);
+                                    .into(profilePickFive);
                             addIconFive.setVisibility ( View.GONE );
                             removeIconFive.setVisibility ( View.VISIBLE );
                         }
 
-                        String urlSix  = documentSnapshot.getString ( "ProfilePic6" );
+                        String urlSix  = documentSnapshot.getString ( "profilePic6" );
 
                         if(urlSix!=null) {
                             Picasso.get()
                                     .load(urlFour.toString ())
                                     .fit ()
-                                    .into(profilePickThree);
+                                    .into(profilePickSix);
                             addIconSix.setVisibility ( View.GONE );
                             removeIconSix.setVisibility ( View.VISIBLE );
                         }
@@ -686,29 +741,62 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
         lookingForLanguageText.setText ( lang );
     }
 
-//    @Override
-//    protected void onStart() {
-//        super.onStart ();
-//
-//        if(mAuth.getCurrentUser ()!=null) {
-//
-
-//        }
-//
-//    }
-//
     @Override
-    protected void onDestroy() {
-        super.onDestroy ();
+    protected void onStart() {
+        super.onStart ();
+        checkConnection ();
         if(mAuth.getCurrentUser ()!=null) {
             String currentDate;
             Calendar calendar = Calendar.getInstance ();
             SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
             currentDate = currentDateTime.format ( calendar.getTime () );
             db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
-            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
+            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "online" );
         }
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume ();
+
+        checkConnection ();
+        if(mAuth.getCurrentUser ()!=null) {
+            String currentDate;
+            Calendar calendar = Calendar.getInstance ();
+            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+            currentDate = currentDateTime.format ( calendar.getTime () );
+            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "online" );
+        }
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause ();
+        checkConnection ();
+        if(mAuth.getCurrentUser ()!=null) {
+            String currentDate;
+            Calendar calendar = Calendar.getInstance ();
+            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+            currentDate = currentDateTime.format ( calendar.getTime () );
+            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "paused" );
+        }
+    }
+//
+//    @Override
+//    protected void onDestroy() {
+//        super.onDestroy ();
+//        if(mAuth.getCurrentUser ()!=null) {
+//            String currentDate;
+//            Calendar calendar = Calendar.getInstance ();
+//            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd/MM/yyyy HH:mm:ss" );
+//            currentDate = currentDateTime.format ( calendar.getTime () );
+//            db.collection ( "Users" ).document ( userId ).update ( "lastSeenTime", currentDate );
+//            db.collection ( "Users" ).document ( userId ).update ( "userStatus", "offline" );
+//        }
+//    }
     int count = 0;
     @Override
     public void onBackPressed() {
@@ -720,6 +808,30 @@ public class EditProfile extends AppCompatActivity implements EditNickName.NickN
         else{
             startActivity ( new Intent ( getApplicationContext (),Main.class ) );
             finish ();
+        }
+
+    }
+
+    public void checkConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext ().getSystemService ( Context.CONNECTIVITY_SERVICE );
+
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo ();
+
+        if(activeNetwork!=null) {
+            if(activeNetwork.getType () == ConnectivityManager.TYPE_WIFI) {
+
+            }
+
+            else if(activeNetwork.getType ()==ConnectivityManager.TYPE_MOBILE) {
+
+            }
+            else {
+                Toast.makeText ( this, "not internet connection", Toast.LENGTH_SHORT ).show ();
+            }
+
+        }
+        else {
+            Toast.makeText ( this, "not internet connection", Toast.LENGTH_SHORT ).show ();
         }
 
     }

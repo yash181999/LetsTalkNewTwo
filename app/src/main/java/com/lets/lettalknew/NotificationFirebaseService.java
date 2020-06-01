@@ -106,24 +106,33 @@ public class NotificationFirebaseService extends FirebaseMessagingService {
         String body = remoteMessage.getData ().get ( "body" );
 
         RemoteMessage.Notification notification = remoteMessage.getNotification ();
-        int i = Integer.parseInt ( user.replaceAll ( "[\\D]" , "" ) );
-        Intent intent = new Intent ( this, ChatActivity.class );
-        Bundle bundle = new Bundle ();
+        try{
+            int i = Integer.parseInt ( user.replaceAll ( "[\\D]" , "" ) );
 
-        bundle.putString ( "id",user );
-        intent.putExtras ( bundle);
-        intent.addFlags ( Intent.FLAG_ACTIVITY_CLEAR_TOP );
-        PendingIntent pendingIntent = PendingIntent.getActivity ( this,i,intent, PendingIntent.FLAG_ONE_SHOT );
+            Intent intent = new Intent ( this, ChatActivity.class );
+            Bundle bundle = new Bundle ();
 
-        Uri defSoundUri = RingtoneManager.getDefaultUri ( RingtoneManager.TYPE_NOTIFICATION);
+            bundle.putString ( "id",user );
+            intent.putExtras ( bundle);
+            intent.addFlags ( Intent.FLAG_ACTIVITY_CLEAR_TOP );
+            PendingIntent pendingIntent = PendingIntent.getActivity ( this,i,intent, PendingIntent.FLAG_ONE_SHOT );
 
-        OreoAndAboveNotification oreoAndAboveNotification = new OreoAndAboveNotification ( this );
-        Notification.Builder builder = oreoAndAboveNotification.getNotification ( title,body,pendingIntent ,defSoundUri,icon );
+            Uri defSoundUri = RingtoneManager.getDefaultUri ( RingtoneManager.TYPE_NOTIFICATION);
 
-        int j = 0;
-        if(i>0) {
-            j = i;
+            OreoAndAboveNotification oreoAndAboveNotification = new OreoAndAboveNotification ( this );
+            Notification.Builder builder = oreoAndAboveNotification.getNotification ( title,body,pendingIntent ,defSoundUri,icon );
+
+            int j = 0;
+            if(i>0) {
+                j = i;
+            }
+            oreoAndAboveNotification.getManager ().notify ( j,builder.build () );
+
         }
-        oreoAndAboveNotification.getManager ().notify ( j,builder.build () );
+        catch (Exception e ){
+
+        }
+
+
     }
 }

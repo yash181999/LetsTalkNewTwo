@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:checkable="true"
         android:id="@+id/favorite"
         android:title="Favorites"
         android:icon="@drawable/ic_favorite_border_black_24dp"
@@ -11,8 +12,33 @@
 
     <item
         android:iconTint="@color/colorWhite"
-        android:id="@+id/more"
-        android:title="more"
+        android:id="@+id/view_contact"
+        android:title="View Contact"
+        app:showAsAction="never" />
+
+    <item
+        android:iconTint="@color/colorWhite"
+        android:id="@+id/add_to_favorite"
+        android:title="Add to Favorites"
+        app:showAsAction="never" />
+
+    <item
+        android:iconTint="@color/colorWhite"
+        android:id="@+id/delete_chat"
+        android:title="Delete Chat"
+        app:showAsAction="never" />
+
+
+    <item
+        android:iconTint="@color/colorWhite"
+        android:id="@+id/report_user"
+        android:title="Report User"
+        app:showAsAction="never" />
+
+    <item
+        android:iconTint="@color/colorWhite"
+        android:id="@+id/block_user"
+        android:title="Block User"
         app:showAsAction="never" />
 
 </menu>

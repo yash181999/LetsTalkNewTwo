@@ -2,7 +2,7 @@ package com.lets.lettalknew;
 
 public class ModalChat {
     String message, receiver, sender,image,time,audio;
-    boolean isSeen;
+    String isSeen;
 
     public ModalChat() {
 
@@ -16,21 +16,22 @@ public class ModalChat {
         this.time = time;
     }
 
-    public boolean isSeen() {
+    public String isSeen() {
         return isSeen;
     }
 
-    public void setSeen(boolean seen) {
+    public void setSeen(String seen) {
         isSeen = seen;
     }
 
-    public ModalChat(String message, String receiver, String sender, String image, String time, boolean isSeen,String audio) {
+    public ModalChat(String message, String receiver, String sender, String image, String time, String isSeen,String audio) {
         this.message = message;
         this.receiver = receiver;
         this.sender = sender;
         this.image = image;
         this.time = time;
         this.isSeen = isSeen;
+        this.audio=  audio;
     }
 
     public String getAudio() {
@@ -40,6 +41,8 @@ public class ModalChat {
     public void setAudio(String audio) {
         this.audio = audio;
     }
+
+
 
     public String getMessage() {
         return message;
