@@ -66,12 +66,12 @@ public class Favourites extends Fragment {
         View view =  inflater.inflate ( R.layout.fragment_favourites, container, false );
 
         favoritesList = view.findViewById ( R.id.favorite_list );
+
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager ( getContext () );
 
         favoritesList.setHasFixedSize ( true );
 
         favoritesList.setLayoutManager ( linearLayoutManager );
-
 
         mAuth = FirebaseAuth.getInstance ();
         db = FirebaseFirestore.getInstance ();
@@ -94,18 +94,12 @@ public class Favourites extends Fragment {
                 .addValueEventListener ( new ValueEventListener () {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                id.clear ();
-
+                id.clear();
                 for(DataSnapshot ds: dataSnapshot.getChildren ()){
                     String userId = ds.getKey ();
                     id.add ( userId );
-
                 }
-
-
                 favoriteAdapter = new AdapterFavorites (getContext (),id );
-
                 favoritesList.setAdapter ( favoriteAdapter );
                 favoriteAdapter.notifyDataSetChanged ();
             }

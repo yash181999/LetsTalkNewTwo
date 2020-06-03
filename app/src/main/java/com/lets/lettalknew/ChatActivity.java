@@ -311,9 +311,12 @@ public class ChatActivity extends AppCompatActivity {
 
                                     }
                                 } );
+                        break;
 
                     case R.id.block_user:
                         blockUser();
+                        break;
+
 
                 }
 
@@ -457,6 +460,11 @@ public class ChatActivity extends AppCompatActivity {
     }    //loading user Information to top bar---
 
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed ();
+        finish ();
+    }
 
     //record Audio--
     public void recordAudio() {

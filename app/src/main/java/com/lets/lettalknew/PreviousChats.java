@@ -92,9 +92,6 @@ public class PreviousChats extends Fragment {
         } );
 
 
-
-
-
         return view;
     }
 
@@ -156,6 +153,7 @@ public class PreviousChats extends Fragment {
 
     }
 
+    //load chats
     private void loadChats() {
         userList = new ArrayList<> ();
          db.collection ( "Users" ).addSnapshotListener ( new EventListener<QuerySnapshot> () {
@@ -164,27 +162,28 @@ public class PreviousChats extends Fragment {
                 if (e == null) {
 
                     userList.clear ();
-                    for(DocumentSnapshot dataSnapshot : queryDocumentSnapshots.getDocuments ())  {
+                    for (DocumentSnapshot dataSnapshot : queryDocumentSnapshots.getDocuments ()) {
 
                         ModalUser modalUser = (ModalUser) dataSnapshot.toObject ( ModalUser.class );
-                        for(ModalChatList chatList : chatlistList) {
-                            if(modalUser.getuId () != null && modalUser.getuId ().equals ( chatList.getId () )) {
+                        for (ModalChatList chatList : chatlistList) {
+                            if (modalUser.getuId () != null && modalUser.getuId ().equals ( chatList.getId () )) {
                                 userList.add ( modalUser );
                                 break;
                             }
                         }
-                        adapterChatList = new AdapterChatList ( getContext (),userList);
+                        adapterChatList = new AdapterChatList ( getContext (), userList );
 
                         recyclerView.setAdapter ( adapterChatList );
+                        adapterChatList.notifyDataSetChanged ();
 
-                        for(int i=0; i<userList.size ();i++) {
-                            lastMessage(userList.get ( i ).getuId ());
+                        for (int i = 0; i < userList.size (); i++) {
+                            lastMessage ( userList.get ( i ).getuId () );
                         }
                     }
                 }
-
-
             }
         } );
-    }
+    }//load chats
+
+
 }

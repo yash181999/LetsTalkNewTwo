@@ -1,5 +1,6 @@
 package com.lets.lettalknew;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,11 +14,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -38,9 +42,11 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
 
     private Map<String, String> lastMessageMap;
 
-    Dialog myDialog;
+    FirebaseAuth mAuth;
+    FirebaseDatabase firebaseDatabase;
 
-    Dialog infoDialog;
+    FirebaseUser user;
+
 
     public AdapterChatList(Context context, List<ModalUser> userList) {
         this.context = context;
@@ -53,16 +59,17 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
     public MyHolder onCreateViewHolder(@NonNull final ViewGroup parent, int viewType) {
         View view = LayoutInflater.from ( context ).inflate ( R.layout.chat_list_layout , parent, false);
 
-
+         mAuth = FirebaseAuth.getInstance ();
+         user = mAuth.getCurrentUser ();
+         firebaseDatabase = FirebaseDatabase.getInstance ();
 
         return new MyHolder (    view );
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(@NonNull final MyHolder holder, final int position) {
         //get Data;
-
-
         final String id = userList.get (position).getuId ();
         String userImage = userList.get ( position ).getProfilePic1 ();
         String userName = userList.get ( position).getNickName ();
@@ -110,93 +117,70 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
         }
 
 
+        //if present in favorites show heart
+        firebaseDatabase.getReference ().child ( "Favorites" )
+                .child ( user.getUid () ).addValueEventListener ( new ValueEventListener () {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                holder.favoriteIcon.setVisibility ( View.GONE );
 
-        myDialog = new Dialog ( context );
-        myDialog.setContentView ( R.layout.activity_another_user_profile );
-        ImageView profileImage = myDialog.findViewById ( R.id.another_user_profilePic );
-        TextView name = myDialog.findViewById ( R.id.another_user_name );
-        TextView gender = myDialog.findViewById ( R.id.another_user_gender );
+                for(DataSnapshot ds : dataSnapshot.getChildren ()){
+                    String favoriteId = ds.getKey ();
+                    if(favoriteId.equals ( id )) {
+                        holder.favoriteIcon.setVisibility ( View.VISIBLE );
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-        try{
-            Picasso.get ().load ( userImage ).placeholder ( R.drawable.dummyprofile ).fit ().into ( profileImage );
-        }
-        catch (Exception e) {
-            Picasso.get ().load ( R.drawable.dummyprofile ).placeholder ( R.drawable.dummyprofile ).fit ().into ( profileImage );
-
-        }
-
-        name.setText ( userName + "(" + userList.get ( position ).getAge ()+ ")");
-
-        gender.setText ( userList.get ( position ).getGender () );
+            }
+        } );
+        //--if present in favorites show heart--
 
 
         holder.chatProfileImage.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-                myDialog.show ();
+                holder.myDialog.show ();
             }
         } );
+
+
+        try{
+            Picasso.get ().load ( userImage ).placeholder ( R.drawable.dummyprofile ).fit ().into ( holder.profileImage );
+        }
+        catch (Exception e) {
+            Picasso.get ().load ( R.drawable.dummyprofile ).placeholder ( R.drawable.dummyprofile ).fit ().into ( holder.profileImage );
+
+        }
+
+        holder.name.setText ( userName + "(" + userList.get ( position ).getAge ()+ ")");
+
+        holder.gender.setText ( userList.get ( position ).getGender () );
+
 
 
         //handle click
         holder.itemView.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-
                 Intent intent = new Intent ( context,ChatActivity.class );
                 intent.putExtra ( "id",id );
                 context.startActivity ( intent );
             }
         } );
 
-//
-//        //display heart icon to favorites
-//
-//        FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" )
-//                .child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () ).
-//                child ( id ).addListenerForSingleValueEvent ( new ValueEventListener () {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//
-//                if(dataSnapshot.getValue ()!=null){
-//
-//                    holder.favoriteIcon.setVisibility ( View.VISIBLE );
-//
-//                }
-//                else{
-//                    holder.favoriteIcon.setVisibility ( View.GONE );
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        } );
-//
-//        //display heart icon to favorites
-
-
-
-        infoDialog = new Dialog ( context );
-        infoDialog.setContentView ( R.layout.chat_list_info_layout );
-
-        final TextView blockUser,addToFavorites,deleteChat;
-
-        blockUser = infoDialog.findViewById ( R.id.block_user );
-        addToFavorites= infoDialog.findViewById ( R.id.add_to_favorite );
-        deleteChat = infoDialog.findViewById ( R.id.delete_chat );
-
         holder.itemView.setOnLongClickListener ( new View.OnLongClickListener () {
             @Override
             public boolean onLongClick(View v) {
-                infoDialog.show ();
+                holder.infoDialog.show ();
                 return false;
             }
         } );
 
-        deleteChat.setOnClickListener ( new View.OnClickListener () {
+        holder.deleteChat.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
                 FirebaseDatabase.getInstance ().getReference ("ChatList")
@@ -205,62 +189,102 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
                     @Override
                     public void onSuccess(Void aVoid) {
                         Toast.makeText ( context, "removed", Toast.LENGTH_SHORT ).show ();
-                        infoDialog.dismiss ();
+                        holder.infoDialog.dismiss ();
                     }
                 } );
             }
         } );
 
-        addToFavorites.setOnClickListener ( new View.OnClickListener () {
+        holder.addToFavorites.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-                checkIfPresent (id);
+                checkIfPresent (userList.get ( position ).getuId (),holder);
             }
         } );
 
         //block user --
-        blockUser.setOnClickListener ( new View.OnClickListener () {
+        holder.blockUser.setOnClickListener ( new View.OnClickListener () {
             @Override
             public void onClick(View v) {
-                FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
-                        .child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () )
-                        .child ( id ).setValue ( "id",id ).
-                        addOnSuccessListener ( new OnSuccessListener<Void> () {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-
-                        Toast.makeText ( context, "userBlocked", Toast.LENGTH_SHORT ).show ();
-                        FirebaseDatabase.getInstance ().getReference ("ChatList")
-                                .child (id).child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () )
-                                .removeValue ();
-                        FirebaseDatabase.getInstance ().getReference ("ChatList")
-                                .child (FirebaseAuth.getInstance ().getCurrentUser ().getUid ())
-                                 .child (id  )
-                                .removeValue ();
-
-                          infoDialog.dismiss ();
-                    }
-                } );
+               blockUser ( id,holder );
             }
         } );
-        //block user --
-
+/*        block user --*/
 
     }
 
-    public void checkIfPresent(final String id) {
+    public void blockUser(final String id, final MyHolder holder) {
+        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
+                .child ( user.getUid () ).child ( id ).setValue ( "id",id ).addOnSuccessListener ( new OnSuccessListener<Void> () {
+            @Override
+            public void onSuccess(Void aVoid) {
+               firebaseDatabase.getReference ().child ( "BlockedMe" ).child ( id ).child ( user.getUid () )
+               .setValue ( "id",user.getUid () ).addOnSuccessListener ( new OnSuccessListener<Void> () {
+                   @Override
+                   public void onSuccess(Void aVoid) {
+                       Toast.makeText ( context, "userBlocked", Toast.LENGTH_SHORT ).show ();
+                       FirebaseDatabase.getInstance ().getReference ("ChatList")
+                               .child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () )
+                               .child ( id ).removeValue ().addOnSuccessListener ( new OnSuccessListener<Void> () {
+                           @Override
+                           public void onSuccess(Void aVoid) {
+
+                           }
+                       } );
+
+                       FirebaseDatabase.getInstance ().getReference ("ChatList")
+                               .child ( id )
+                               .child ( user.getUid () ).removeValue ().
+                               addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                   @Override
+                                   public void onSuccess(Void aVoid) {
+                                       holder.infoDialog.dismiss ();
+                                   }
+                               } );
+
+                       firebaseDatabase.getReference ().child ( "Chats" )
+                               .addValueEventListener ( new ValueEventListener () {
+                                   @Override
+                                   public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                         for(DataSnapshot ds:  dataSnapshot.getChildren ()) {
+                                            if(ds.child ( "sender" ).getValue ().equals (user.getUid ()) ||
+                                            ds.child ( "receiver" ).getValue ().equals ( id )) {
+                                                   ds.getRef ().removeValue ();
+                                             }
+                                         }
+                                   }
+
+                                   @Override
+                                   public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                   }
+                               } );
+                     }
+               } );
+            }
+        } );
+
+    }
+
+    public void removeFromChatList(final String id, final MyHolder holder) {
+
+    }
+
+
+    public void checkIfPresent(final String id, final MyHolder holder) {
          FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" )
-                 .child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () ).child ( id ).addListenerForSingleValueEvent ( new ValueEventListener () {
+                 .child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () ).
+                 child ( id ).addListenerForSingleValueEvent ( new ValueEventListener () {
              @Override
              public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                  if(dataSnapshot.getValue ()!=null){
-                     infoDialog.dismiss ();
+                     holder.infoDialog.dismiss ();
                      Toast.makeText ( context, "already in favorites", Toast.LENGTH_SHORT ).show ();
 
                  }
                  else{
-                     addToFavorites ( id );
+                     addToFavorites ( id,holder );
                  }
              }
 
@@ -271,13 +295,14 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
          } );
     }
 
-    public void addToFavorites(String id) {
+
+    public void addToFavorites(String id, final MyHolder holder) {
         FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" )
                 .child ( FirebaseAuth.getInstance ().getCurrentUser ().getUid () )
                 .child ( id ).setValue ( "id",id ).addOnSuccessListener ( new OnSuccessListener<Void> () {
             @Override
             public void onSuccess(Void aVoid) {
-                infoDialog.dismiss ();
+                holder.infoDialog.dismiss ();
                 Toast.makeText ( context, "Added to Favorites", Toast.LENGTH_SHORT ).show ();
             }
         } );
@@ -297,8 +322,19 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
 
 
     class MyHolder extends RecyclerView.ViewHolder {
+
+        Dialog myDialog;
+
+        Dialog infoDialog;
+
         ImageView chatProfileImage,favoriteIcon;
         TextView chatProfileName,chatProfileLastMsg,chatProfileStatus;
+        ImageView profileImage;
+        TextView name;
+        TextView gender;
+        TextView blockUser,addToFavorites,deleteChat;
+
+
         public MyHolder(@NonNull View itemView) {
             super ( itemView );
 
@@ -308,6 +344,21 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
             chatProfileStatus = itemView.findViewById ( R.id.chat_profile_status );
             favoriteIcon = itemView.findViewById ( R.id.favorite_icon_chat_list );
 
+            myDialog = new Dialog ( itemView.getContext () );
+            myDialog.setContentView ( R.layout.activity_another_user_profile );
+
+            infoDialog = new Dialog ( itemView.getContext () );
+            infoDialog.setContentView ( R.layout.chat_list_info_layout );
+
+            profileImage = myDialog.findViewById ( R.id.another_user_profilePic );
+            name = myDialog.findViewById ( R.id.another_user_name );
+            gender = myDialog.findViewById ( R.id.another_user_gender );
+
+            addToFavorites= infoDialog.findViewById ( R.id.add_to_favorite );
+            deleteChat =  infoDialog.findViewById ( R.id.delete_chat );
+            blockUser = infoDialog.findViewById ( R.id.block_user );
+
         }
     }
+
 }

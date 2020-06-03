@@ -8,6 +8,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
@@ -19,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,6 +31,10 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -56,16 +62,16 @@ public class Main extends AppCompatActivity implements
      DocumentReference documentReference;
 
      TextView genderDetail, name;
+
      String userId;
 
      private ListView chatListView;
 
-
+     ArrayList<String> blockList;
 
      String userStatus;
 
      FloatingActionButton searchRandomChat;
-
 
      RoundedImageView roundedImageView;
 
@@ -118,6 +124,8 @@ public class Main extends AppCompatActivity implements
         name = navigationView.getHeaderView ( 0 ).findViewById ( R.id.name );
 
         searchRandomChat = findViewById ( R.id.search_random_user );
+
+        blockList = new ArrayList<> (  );
 
 
         //edit profile
@@ -279,47 +287,70 @@ public class Main extends AppCompatActivity implements
     String idRandom  = "";
     int flag = 0;
     public void searchRandomUser(View view) {
+
+        searchRandomChat.setVisibility ( View.GONE );
+        final ProgressDialog progressDialog = new ProgressDialog ( this );
+        progressDialog.setMessage ( "Searching the Random user" );
+        progressDialog.show ();
+
         db.collection ( "Users" ).addSnapshotListener ( new EventListener<QuerySnapshot> () {
             @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+            public void onEvent(@Nullable final QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 if(e==null) {
-                    ArrayList<String> randomId = new ArrayList<> (  );
-
-                    for (DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments ()) {
-
-                        if (!documentSnapshot.getId ().equals (userId  )) {
-
-                            randomId.add ( documentSnapshot.getId () );
-
-                        }
-                    }
+                    final ArrayList<String> randomId = new ArrayList<> (  );
 
 
-                        String idRandom = randomId.get ( new Random (  ).nextInt (randomId.size ()) ) ;
+                    FirebaseDatabase.getInstance ().getReference ()
+                            .child ( "BlockedMe" ).child ( mAuth.getCurrentUser ().getUid () )
+                            .addValueEventListener ( new ValueEventListener () {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    blockList.clear ();
+                                    for(DataSnapshot ds : dataSnapshot.getChildren ()){
+                                        blockList.add (  ds.getKey ());
+                                    }
 
 
-                    flag++;
-                    if(flag == 1) {
+                                    for (final DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments ()) {
+                                        if (!documentSnapshot.getId ().equals (userId ) && !blockList.contains ( documentSnapshot.getId () )) {
+                                            randomId.add ( documentSnapshot.getId () );
+                                        }
 
+                                    }
 
-                        Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
-                        intent.putExtra ( "id", idRandom );
-                        startActivity ( intent );
+                                    final String idRandom = randomId.get ( new Random (  ).nextInt (randomId.size ()) ) ;
 
-                    }
+                                    flag++;
+                                    if(flag == 1) {
+                                        if(!idRandom.isEmpty () ){
+
+                                            Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
+                                            intent.putExtra ( "id", idRandom );
+                                            startActivity ( intent );
+                                            searchRandomChat.setVisibility ( View.VISIBLE );
+                                            progressDialog.dismiss ();
+                                        }
+                                        else{
+
+                                            Toast.makeText ( Main.this, "no user found", Toast.LENGTH_SHORT ).show ();
+                                            searchRandomChat.setVisibility ( View.VISIBLE );
+                                        }
+                                    }
+
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            } );
                 }
                 else{
                     Toast.makeText ( Main.this, "e : "  +  e, Toast.LENGTH_SHORT ).show ();
                 }
-
             }
         });
-
         flag = 0;
-
     }
-
-
 
     private void setUpViewPager(ViewPager viewPager) {
         PageAdapter pageAdapter = new PageAdapter ( getSupportFragmentManager () );
@@ -336,7 +367,8 @@ public class Main extends AppCompatActivity implements
     }
 
     public void checkConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getApplicationContext ().getSystemService ( Context.CONNECTIVITY_SERVICE );
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getApplicationContext ().getSystemService ( Context.CONNECTIVITY_SERVICE );
 
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo ();
 

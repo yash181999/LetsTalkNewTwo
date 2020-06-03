@@ -80,7 +80,8 @@ public class AdapterFavorites extends RecyclerView.Adapter<AdapterFavorites.MyHo
     @Override
     public void onBindViewHolder(@NonNull final AdapterFavorites.MyHolder holder, final int position) {
 
-        db.collection ( "Users" ).document (id.get ( position )).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
+        db.collection ( "Users" ).document (id.get ( position )).
+                addSnapshotListener ( new EventListener<DocumentSnapshot> () {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 ModalUser user = documentSnapshot.toObject ( ModalUser.class );
@@ -126,7 +127,7 @@ public class AdapterFavorites extends RecyclerView.Adapter<AdapterFavorites.MyHo
             @Override
             public boolean onLongClick(View v) {
 
-               infoDialog.show ();
+                infoDialog.show ();
 
                 return false;
             }

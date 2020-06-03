@@ -3,20 +3,22 @@
     android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
+
         android:padding="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
             <com.makeramen.roundedimageview.RoundedImageView
-                android:id="@+id/chat_profile_image"
+                android:id="@+id/block_profile_image"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:src="@drawable/dummyprofile"
@@ -28,63 +30,52 @@
 
             </com.makeramen.roundedimageview.RoundedImageView>
 
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+
+            <TextView
+
+                android:layout_gravity="center"
+                android:gravity="center_horizontal"
+                android:textStyle="bold"
+                android:id="@+id/block_user_name"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"
+                android:text="Annonymous"
+                android:maxLines="1"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content">
+
+            </TextView>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
             <ImageView
-                android:id="@+id/favorite_icon_chat_list"
-                android:visibility="gone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/heart"
+                android:id="@+id/remove_from_block"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/delete_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/chat_profile_image"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="@+id/chat_profile_image"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0">
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.878"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
             </ImageView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        <LinearLayout
-            android:layout_gravity="center"
-            android:padding="5dp"
-            android:orientation="vertical"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content">
+    </LinearLayout>
 
 
-            <TextView
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:textStyle="bold"
-                android:id="@+id/chat_profile_name"
-                android:textSize="16sp"
-                android:textColor="@color/colorBlack"
-                android:text="Annonymous"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content">
-
-            </TextView>
-
-
-
-
-        </LinearLayout>
-
-
-        <Button
-            android:layout_marginLeft="40dp"
-            android:textColor="@color/colorWhite"
-            android:text="Remove"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/orange"
-           >
-
-        </Button>
 
     </LinearLayout>
 
 
-</LinearLayout>
