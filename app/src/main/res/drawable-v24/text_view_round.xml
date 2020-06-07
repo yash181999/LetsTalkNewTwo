@@ -4,6 +4,6 @@
 
     <corners android:radius="10dp" />  // set radius of corner
    // set color and width of border
-    <solid android:color="@color/colorLight" /> // inner bgcolor
+    <solid android:color="#25D366" /> // inner bgcolor
 
 </shape>

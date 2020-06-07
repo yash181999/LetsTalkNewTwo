@@ -46,6 +46,7 @@ public class PreviousChats extends Fragment {
     FirebaseFirestore db;
 
     AdapterChatList adapterChatList;
+    List<String> blockList = new ArrayList<> (  );
 
     public PreviousChats() {
         // Required empty public constructor
@@ -71,25 +72,45 @@ public class PreviousChats extends Fragment {
 
         recyclerView.setLayoutManager ( linearLayoutManager );
 
+        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedMe" ).child ( mAuth.getCurrentUser ().getUid () )
+                .addValueEventListener ( new ValueEventListener () {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        blockList.clear ();
+                        for(DataSnapshot ds: dataSnapshot.getChildren ()) {
+                            blockList.add ( ds.getKey () );
+                        }
 
-        databaseReference.addValueEventListener ( new ValueEventListener () {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                chatlistList.clear ();
-                for (DataSnapshot ds : dataSnapshot.getChildren ()) {
-                    ModalChatList chatList = ds.getValue ( ModalChatList.class );
-                    chatlistList.add ( chatList );
+                        databaseReference.addValueEventListener ( new ValueEventListener () {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                chatlistList.clear ();
+                                for (DataSnapshot ds : dataSnapshot.getChildren ()) {
+                                    ModalChatList chatList = ds.getValue ( ModalChatList.class );
+                                    if(!blockList.contains ( chatList.getId () )) {
+                                        chatlistList.add ( chatList );
+                                    }
 
-                }
 
-                loadChats ();
-            }
+                                }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        } );
+                                loadChats ();
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        } );
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                } );
 
 
         return view;
@@ -174,7 +195,7 @@ public class PreviousChats extends Fragment {
                         adapterChatList = new AdapterChatList ( getContext (), userList );
 
                         recyclerView.setAdapter ( adapterChatList );
-                        adapterChatList.notifyDataSetChanged ();
+
 
                         for (int i = 0; i < userList.size (); i++) {
                             lastMessage ( userList.get ( i ).getuId () );

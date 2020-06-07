@@ -13,9 +13,9 @@
         android:layout_height="wrap_content">
         <LinearLayout
             android:orientation="vertical"
-            android:background="@color/colorLight"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
+
             <ImageView
                 android:src="@drawable/dummyprofile"
                 android:id="@+id/another_user_profilePic"
@@ -25,10 +25,11 @@
             </ImageView>
 
             <TextView
+                android:paddingLeft="15dp"
                 android:id="@+id/another_user_name"
-                android:gravity="center"
+                android:gravity="left"
                 android:textSize="18sp"
-                android:textColor="@color/colorWhite"
+                android:textColor="@color/orange"
                 android:text="Name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -36,10 +37,11 @@
             </TextView>
 
             <TextView
+                android:paddingLeft="15dp"
                 android:id="@+id/another_user_gender"
-                android:gravity="center"
+                android:gravity="left"
                 android:textSize="18sp"
-                android:textColor="@color/colorWhite"
+                android:textColor="@color/orange"
                 android:text="Gender"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">

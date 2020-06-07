@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -66,5 +67,9 @@ public class BlockedUsers extends AppCompatActivity {
 
                     }
                 } );
+    }
+
+    public void blockBack(View view) {
+        finish ();
     }
 }

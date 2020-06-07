@@ -70,9 +70,9 @@
         android:layout_height="wrap_content"
         android:backgroundTint="@color/colorRed"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/check_box_dog"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/check_box_dog"
         app:layout_constraintTop_toBottomOf="@+id/check_box_dog"
         app:layout_constraintVertical_bias="0.061"></com.google.android.material.checkbox.MaterialCheckBox>
 
@@ -109,9 +109,9 @@
         android:layout_height="wrap_content"
         android:backgroundTint="@color/colorRed"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/check_box_men"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/check_box_men"
         app:layout_constraintTop_toBottomOf="@+id/check_box_men"
         app:layout_constraintVertical_bias="0.092">
 

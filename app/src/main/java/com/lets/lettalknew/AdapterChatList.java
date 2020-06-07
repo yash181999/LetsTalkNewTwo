@@ -51,7 +51,7 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
     public AdapterChatList(Context context, List<ModalUser> userList) {
         this.context = context;
         this.userList = userList;
-       lastMessageMap = new HashMap<> (  );
+        lastMessageMap = new HashMap<> (  );
     }
 
     @NonNull
@@ -108,12 +108,15 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
         if(userList.get ( position ).getUserStatus ().equals ( "online" ) ) {
             holder.chatProfileStatus.setText ( "online" );
         }
-        else {
+        else if(userList.get ( position ).isShareLastSeen () == true) {
 
             String lastSeenTime[] = userList.get ( position ).getLastSeenTime ().split ( " " );
             if(lastSeenTime!=null) {
                 holder.chatProfileStatus.setText (lastSeenTime[0]);
             }
+        }
+        else{
+            holder.chatProfileStatus.setText ( "" );
         }
 
 
@@ -232,34 +235,19 @@ public class AdapterChatList extends RecyclerView.Adapter<AdapterChatList.MyHold
                            }
                        } );
 
-                       FirebaseDatabase.getInstance ().getReference ("ChatList")
-                               .child ( id )
-                               .child ( user.getUid () ).removeValue ().
-                               addOnSuccessListener ( new OnSuccessListener<Void> () {
-                                   @Override
-                                   public void onSuccess(Void aVoid) {
-                                       holder.infoDialog.dismiss ();
-                                   }
-                               } );
 
-                       firebaseDatabase.getReference ().child ( "Chats" )
-                               .addValueEventListener ( new ValueEventListener () {
-                                   @Override
-                                   public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                         for(DataSnapshot ds:  dataSnapshot.getChildren ()) {
-                                            if(ds.child ( "sender" ).getValue ().equals (user.getUid ()) ||
-                                            ds.child ( "receiver" ).getValue ().equals ( id )) {
-                                                   ds.getRef ().removeValue ();
-                                             }
-                                         }
-                                   }
+                    try {
+                        FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( mAuth.getCurrentUser ().getUid () )
+                                .child ( id ).removeValue ();
 
-                                   @Override
-                                   public void onCancelled(@NonNull DatabaseError databaseError) {
+                        FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( id )
+                                .child ( mAuth.getCurrentUser ().getUid () ).removeValue ();
+                    }
+                    catch (Exception e) {
 
-                                   }
-                               } );
-                     }
+                    }
+
+                   }
                } );
             }
         } );

@@ -22,11 +22,11 @@
         android:title="Add to Favorites"
         app:showAsAction="never" />
 
-    <item
-        android:iconTint="@color/colorWhite"
-        android:id="@+id/delete_chat"
-        android:title="Delete Chat"
-        app:showAsAction="never" />
+<!--    <item-->
+<!--        android:iconTint="@color/colorWhite"-->
+<!--        android:id="@+id/delete_chat"-->
+<!--        android:title="Delete Chat"-->
+<!--        app:showAsAction="never" />-->
 
 
     <item

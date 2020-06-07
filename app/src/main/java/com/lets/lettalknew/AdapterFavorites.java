@@ -88,11 +88,14 @@ public class AdapterFavorites extends RecyclerView.Adapter<AdapterFavorites.MyHo
 
                 holder.favoriteName.setText ( user.getNickName () );
                 String status = user.getUserStatus ();
-                if(status.equals ( "offline" ) || status.equals ( "paused" )) {
+                if(status.equals ( "online" )) {
+                    holder.favoriteStatus.setText ( user.getUserStatus () );
+                }
+                else if( documentSnapshot.getBoolean ( "shareLastSeen" ) == true) {
                     holder.favoriteStatus.setText ( documentSnapshot.getString ( "lastSeenTime" ) );
                 }
                 else{
-                    holder.favoriteStatus.setText ( user.getUserStatus () );
+                    holder.favoriteStatus.setText ( "" );
                 }
 
                 try{

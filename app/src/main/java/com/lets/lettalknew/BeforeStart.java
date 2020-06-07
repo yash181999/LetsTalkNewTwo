@@ -70,7 +70,8 @@ public class BeforeStart extends AppCompatActivity {
             talkBtn.setVisibility ( View.GONE );
             progressBar.setVisibility ( View.VISIBLE );
 
-            ModalUser userDetails = new ModalUser ("Anonymous","Male","18","Women","18-45","English",userId,"online",null,null);
+            ModalUser userDetails = new ModalUser ("Anonymous","Male","18","Women","18-45",
+                    "English",userId,"online", null,null,true,true);
 
             documentReference.set ( userDetails ).addOnSuccessListener ( new OnSuccessListener<Void> () {
                 @Override

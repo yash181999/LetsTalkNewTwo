@@ -4,6 +4,7 @@ public class ModalUser {
 
     String nickName,gender,age,lookingForGender,lookingForAgeRange,lookingForLanguage,uId;
     String userStatus,profilePic1,lastSeenTime;
+    boolean showMeInDiscovery,shareLastSeen;
 
     public ModalUser(){}
 
@@ -23,8 +24,24 @@ public class ModalUser {
         this.lastSeenTime = lastSeenTime;
     }
 
+    public boolean isShowMeInDiscovery() {
+        return showMeInDiscovery;
+    }
+
+    public boolean isShareLastSeen() {
+        return shareLastSeen;
+    }
+
+    public void setShareLastSeen(boolean shareLastSeen) {
+        this.shareLastSeen = shareLastSeen;
+    }
+
+    public void setShowMeInDiscovery(boolean showMeInDiscovery) {
+        this.showMeInDiscovery = showMeInDiscovery;
+    }
+
     public ModalUser(String nickName, String gender, String age, String lookingForGender, String lookingForAgeRange, String lookingForLanguage, String uId,
-                     String userStatus, String ProfilePic1, String lastSeenTime) {
+                     String userStatus, String ProfilePic1, String lastSeenTime, boolean showMeInDiscovery, boolean shareLastSeen) {
         this.nickName = nickName;
         this.gender = gender;
         this.age = age;
@@ -35,6 +52,8 @@ public class ModalUser {
         this.profilePic1 = ProfilePic1;
         this.uId = uId;
         this.lastSeenTime = lastSeenTime;
+        this.shareLastSeen = shareLastSeen;
+        this.showMeInDiscovery = showMeInDiscovery;
 
 
 

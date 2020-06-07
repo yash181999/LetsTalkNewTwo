@@ -312,31 +312,48 @@ public class Main extends AppCompatActivity implements
 
 
                                     for (final DocumentSnapshot documentSnapshot : queryDocumentSnapshots.getDocuments ()) {
-                                        if (!documentSnapshot.getId ().equals (userId ) && !blockList.contains ( documentSnapshot.getId () )) {
-                                            randomId.add ( documentSnapshot.getId () );
+                                        if(documentSnapshot!=null) {
+
+                                            try {
+                                                if (!documentSnapshot.getId ().equals ( userId ) && !blockList.contains ( documentSnapshot.getId () ) &&
+                                                        documentSnapshot.getBoolean ( "showMeInDiscovery" ) == true) {
+                                                    randomId.add ( documentSnapshot.getId () );
+                                                }
+                                            } catch (Exception e) {
+                                                Toast.makeText ( Main.this, "no user found", Toast.LENGTH_SHORT ).show ();
+                                                searchRandomChat.setVisibility ( View.VISIBLE );
+                                                progressDialog.dismiss ();
+                                            }
                                         }
 
-                                    }
 
+                                    }
+                                    try {
                                     final String idRandom = randomId.get ( new Random (  ).nextInt (randomId.size ()) ) ;
 
-                                    flag++;
-                                    if(flag == 1) {
-                                        if(!idRandom.isEmpty () ){
 
-                                            Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
-                                            intent.putExtra ( "id", idRandom );
-                                            startActivity ( intent );
-                                            searchRandomChat.setVisibility ( View.VISIBLE );
-                                            progressDialog.dismiss ();
-                                        }
-                                        else{
 
-                                            Toast.makeText ( Main.this, "no user found", Toast.LENGTH_SHORT ).show ();
-                                            searchRandomChat.setVisibility ( View.VISIBLE );
-                                        }
-                                    }
+                                       flag++;
+                                       if (flag == 1) {
+                                           if (!idRandom.isEmpty ()) {
 
+                                               Intent intent = new Intent ( getApplicationContext (), ChatActivity.class );
+                                               intent.putExtra ( "id", idRandom );
+                                               startActivity ( intent );
+                                               searchRandomChat.setVisibility ( View.VISIBLE );
+                                               progressDialog.dismiss ();
+                                           } else {
+
+                                               Toast.makeText ( Main.this, "no user found", Toast.LENGTH_SHORT ).show ();
+                                               searchRandomChat.setVisibility ( View.VISIBLE );
+                                               progressDialog.dismiss ();
+                                           }
+                                       }
+                                   }
+                                   catch (Exception e){
+                                       searchRandomChat.setVisibility ( View.VISIBLE );
+                                       progressDialog.dismiss ();
+                                   }
                                 }
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError databaseError) {

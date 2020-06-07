@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -45,6 +47,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -137,8 +140,10 @@ public class ChatActivity extends AppCompatActivity {
     EmojIconActions emojIconActions;
 
     ConstraintLayout rootView;
+    Dialog warningDialog;
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
@@ -220,33 +225,58 @@ public class ChatActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction ()==MotionEvent.ACTION_DOWN) {
 
-                   if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.RECORD_AUDIO )
-                           != PackageManager.PERMISSION_GRANTED ) {
+                    if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.RECORD_AUDIO )
+                            != PackageManager.PERMISSION_GRANTED ) {
 
-                       ActivityCompat.requestPermissions ( ChatActivity.this,
-                               new String[] {Manifest.permission.RECORD_AUDIO},REQUEST_CODE_STORAGE_PERMISSION );
+                        ActivityCompat.requestPermissions ( ChatActivity.this,
+                                new String[] {Manifest.permission.RECORD_AUDIO},REQUEST_CODE_STORAGE_PERMISSION );
 
                     }
                     else if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.READ_EXTERNAL_STORAGE )
-                           != PackageManager.PERMISSION_GRANTED ) {
-                       ActivityCompat.requestPermissions ( ChatActivity.this,
-                               new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},05 );
-                   }
+                            != PackageManager.PERMISSION_GRANTED ) {
+                        ActivityCompat.requestPermissions ( ChatActivity.this,
+                                new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},05 );
+                    }
                     else if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.WRITE_EXTERNAL_STORAGE )
-                           != PackageManager.PERMISSION_GRANTED ) {
-                       ActivityCompat.requestPermissions ( ChatActivity.this,
-                               new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},06 );
-                   }
-                   else {
-                       fileName = Environment.getExternalStorageDirectory ().getAbsolutePath ();
-                       fileName += "/recorded_audio.3gp";
-                        chatMessage.setVisibility ( View.GONE );
-                        emojy.setVisibility ( View.GONE );
-                        imageSendBtn.setVisibility ( View.GONE );
-                        textRecording.setVisibility ( View.VISIBLE );
+                            != PackageManager.PERMISSION_GRANTED ) {
+                        ActivityCompat.requestPermissions ( ChatActivity.this,
+                                new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},06 );
+                    }
+                    else {
+                        final ArrayList<String> blockedList = new ArrayList<> (  );
+                        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" ).child ( mAuth.getCurrentUser ().getUid () )
+                                .addValueEventListener ( new ValueEventListener () {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        blockedList.clear();
+                                        for(DataSnapshot ds: dataSnapshot.getChildren ()){
+                                            blockedList.add ( ds.getKey () );
+                                        }
 
-                        recordAudio ();
-                   }
+                                        if(!blockedList.contains ( id )) {
+                                            fileName = Environment.getExternalStorageDirectory ().getAbsolutePath ();
+                                            fileName += "/recorded_audio.3gp";
+                                            chatMessage.setVisibility ( View.GONE );
+                                            emojy.setVisibility ( View.GONE );
+                                            imageSendBtn.setVisibility ( View.GONE );
+                                            textRecording.setVisibility ( View.VISIBLE );
+
+                                            recordAudio ();
+                                        }
+                                        else{
+                                            Toast.makeText ( ChatActivity.this, "User is blocked, unblock to Send Message", Toast.LENGTH_LONG ).show ();
+
+                                        }
+
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                } );
+
+                    }
 
                 }//for audio chat---
 
@@ -268,10 +298,10 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         if(dataSnapshot.getValue () != null) {
-                           toolbar.getMenu ().getItem ( 0 ).setIcon ( R.drawable.heart );
+                            toolbar.getMenu ().getItem ( 0 ).setIcon ( R.drawable.heart );
                         }
                         else{
-                           toolbar.getMenu ().getItem (0 ).setIcon ( R.drawable.ic_favorite_border_black_24dp );
+                            toolbar.getMenu ().getItem (0 ).setIcon ( R.drawable.ic_favorite_border_black_24dp );
 
                         }
                     }
@@ -282,10 +312,10 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 } );
 
-         loadUserStatusTopBar ();
-         seenMessage();
-         loadMessages ();
-         onTopBarMenu ();
+        loadUserStatusTopBar ();
+        seenMessage();
+        loadMessages ();
+        onTopBarMenu ();
     }//oncreate mehtod end
 
 
@@ -293,10 +323,10 @@ public class ChatActivity extends AppCompatActivity {
     public void onTopBarMenu( ) {
         toolbar.setOnMenuItemClickListener ( new Toolbar.OnMenuItemClickListener () {
             @Override
-            public boolean onMenuItemClick(final MenuItem item) {
+            public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId ()) {
                     case R.id.favorite:
-
+                    case R.id.add_to_favorite:
                         FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId ).child ( id )
                                 .addListenerForSingleValueEvent ( new ValueEventListener () {
                                     @Override
@@ -304,6 +334,9 @@ public class ChatActivity extends AppCompatActivity {
                                         if(dataSnapshot.getValue () == null) {
                                             toolbar.getMenu ().getItem ( 0).setIcon ( R.drawable.heart );
                                             addToFavorites ();
+                                        }
+                                        else{
+                                            Toast.makeText ( ChatActivity.this, "Already in Favorites", Toast.LENGTH_SHORT ).show ();
                                         }
                                     }
                                     @Override
@@ -314,9 +347,48 @@ public class ChatActivity extends AppCompatActivity {
                         break;
 
                     case R.id.block_user:
-                        blockUser();
+                        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" ).child ( userId ).child ( id )
+                                .addListenerForSingleValueEvent ( new ValueEventListener () {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        if(dataSnapshot.getValue () == null) {
+                                            blockUser ();
+                                        }
+                                        else{
+                                            Toast.makeText ( ChatActivity.this, "Already Blocked", Toast.LENGTH_SHORT ).show ();
+                                        }
+                                    }
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                } );
                         break;
 
+                    case R.id.view_contact:
+                        AnotherUserProfileDialog anotherUserProfile = new AnotherUserProfileDialog (hisName,chatWIthProfileImage,chatWithGender,chatWithAge);
+                        anotherUserProfile.show(getSupportFragmentManager (),"userProfile");
+                        break;
+
+                    case R.id.report_user:
+                        blockUser ();
+                        Map<String,String> reportedUserDetails = new HashMap<> (  );
+                        reportedUserDetails.put ( "nickName",hisName );
+                        reportedUserDetails.put ( "id",id );
+                        reportedUserDetails.put ( "reportedBy",userId );
+                        db.collection ( "ReportedUsers" ).document (userId).set ( reportedUserDetails )
+                                .addOnSuccessListener ( new OnSuccessListener<Void> () {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText ( ChatActivity.this, "User Reported and Blocked", Toast.LENGTH_SHORT ).
+                                                show ();
+                                    }
+                                } );
+                        break;
+//
+//                    case R.id.delete_chat:
+//
+//                        break;
 
                 }
 
@@ -325,17 +397,31 @@ public class ChatActivity extends AppCompatActivity {
         } );
     }
 
-    public void blockUser() {
-        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
-                .child ( mAuth.getCurrentUser ().getUid () )
-                .child ( id ).setValue ( "id",id )
-                .addOnSuccessListener ( new OnSuccessListener<Void> () {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText ( ChatActivity.this, "userBlocked", Toast.LENGTH_SHORT ).show ();
 
-                    }
-                } );
+
+    public void blockUser() {
+
+        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedMe" ).child ( id ).child ( userId )
+                .setValue ( "id",userId );
+
+        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" ).child ( userId )
+                .child ( id ).setValue ( "id",id );
+
+        try{
+            FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId )
+                    .child ( id ).removeValue ();
+
+            FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( id )
+                    .child ( userId ).removeValue ();
+
+            toolbar.getMenu ().getItem (0 ).setIcon ( R.drawable.ic_favorite_border_black_24dp );
+        }
+        catch (Exception e){
+
+        }
+
+
+
     }
 
 //    public void removeChats() {
@@ -368,15 +454,15 @@ public class ChatActivity extends AppCompatActivity {
 
         Map<String, String> favoriteMap = new HashMap<> (  );
         favoriteMap.put ( "id",id );
-            FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId ).
-                    child ( id ).setValue ( favoriteMap ).addOnCompleteListener ( new OnCompleteListener<Void> () {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful ()) {
-                        Toast.makeText ( ChatActivity.this, "added to favorites", Toast.LENGTH_SHORT ).show ();
-                    }
+        FirebaseDatabase.getInstance ().getReference ().child ( "Favorites" ).child ( userId ).
+                child ( id ).setValue ( favoriteMap ).addOnCompleteListener ( new OnCompleteListener<Void> () {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful ()) {
+                    Toast.makeText ( ChatActivity.this, "added to favorites", Toast.LENGTH_SHORT ).show ();
                 }
-            } );
+            }
+        } );
 
 
     }
@@ -434,16 +520,20 @@ public class ChatActivity extends AppCompatActivity {
                         Picasso.get ().load ( profilePic ).fit ().into ( chatWithImage );
                     }
                     String status = documentSnapshot.getString ( "userStatus" );
+                    boolean lastSeenStatus = documentSnapshot.getBoolean ( "shareLastSeen" );
                     if(status!=null) {
                         if(status.equals ( "online" )|| status.equals ( "typing.." )) {
                             chatWithStatus.setText ( status );
                         }
-                        else{
+                        else if(lastSeenStatus == true){
                             String lastSeen = documentSnapshot.getString ( "lastSeenTime" );
                             if(lastSeen!=null) {
                                 chatWithStatus.setText ( lastSeen);
                             }
 
+                        }
+                        else{
+                            chatWithStatus.setText ("");
                         }
                     }
                     String gender = documentSnapshot.getString ( "gender" );
@@ -519,7 +609,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
-       final StorageReference filePath = storage.getReference ().child ( "Audios" ).child ( userId ).child ( id ).child (currentDate);
+        final StorageReference filePath = storage.getReference ().child ( "Audios" ).child ( userId ).child ( id ).child (currentDate);
 
 
         Uri uri = Uri.fromFile ( new File ( fileName ) );
@@ -537,6 +627,8 @@ public class ChatActivity extends AppCompatActivity {
                         imageMessage.put ( "audio",uri.toString () );
                         imageMessage.put ( "sender",userId );
                         imageMessage.put ( "receiver",id );
+                        imageMessage.put("deletedBySender","no");
+                        imageMessage.put ( "deletedByReceiver","no" );
                         imageMessage.put("time",currentDate);
                         imageMessage.put ( "isSeen","false" );
 
@@ -596,30 +688,34 @@ public class ChatActivity extends AppCompatActivity {
                 lastSeenList.clear ();
                 for(DataSnapshot ds : dataSnapshot.getChildren ()) {
                     ModalChat chat = ds.getValue (ModalChat.class);
+                    if(chat!=null){
+                        try{
+                            if( (chat.getReceiver ().equals (userId) && chat.getSender ().equals (id) ) ||
+                                    ( chat.getSender ().equals (userId) && chat.getReceiver ().equals (id)) ) {
 
+                                chatList.add ( chat );
 
+                                String lastSeen = ds.child ( "isSeen" ).getValue (String.class);
+                                lastSeenList.add ( lastSeen );
 
-                    if( (chat.getReceiver ().equals (userId) && chat.getSender ().equals (id) ) ||
-                            ( chat.getSender ().equals (userId) && chat.getReceiver ().equals (id)) ) {
+                            }
 
-                        chatList.add ( chat );
+                            adapterChat = new AdapterChat ( ChatActivity.this,
+                                    chatList,lastSeenList);
 
-                        String lastSeen = ds.child ( "isSeen" ).getValue (String.class);
-                        lastSeenList.add ( lastSeen );
+                            adapterChat.notifyDataSetChanged ();
+
+                            chatListView.setAdapter ( adapterChat );
+                            chatListView.getLayoutManager ().scrollToPosition ( adapterChat.getItemCount ()-1 );
+                        }
+                        catch (Exception e) {
+
+                        }
 
                     }
 
-                    adapterChat = new AdapterChat ( ChatActivity.this,
-                            chatList,lastSeenList);
-
-                    adapterChat.notifyDataSetChanged ();
-
-
-                    chatListView.setAdapter ( adapterChat );
-                    chatListView.getLayoutManager ().scrollToPosition ( adapterChat.getItemCount ()-1 );
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
@@ -638,14 +734,23 @@ public class ChatActivity extends AppCompatActivity {
         seenListener = userRefForSeen.addValueEventListener ( new ValueEventListener () {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               for(DataSnapshot ds : dataSnapshot.getChildren ()) {
-                   ModalChat chat = ds.getValue (ModalChat.class);
-                   if(chat.getReceiver ().equals ( userId ) && chat.getSender ().equals (id) ) {
-                        HashMap<String , Object > hasSeenHasMap = new HashMap<> (  );
-                        hasSeenHasMap.put ( "isSeen","true" );
-                        ds.getRef ().updateChildren ( hasSeenHasMap );
-                   }
-               }
+                for(DataSnapshot ds : dataSnapshot.getChildren ()) {
+                    ModalChat chat = ds.getValue (ModalChat.class);
+                    if(chat!=null){
+                        try{
+                            if (chat.getReceiver ().equals ( userId ) && chat.getSender ().equals ( id )) {
+
+                                HashMap<String, Object> hasSeenHasMap = new HashMap<> ();
+                                hasSeenHasMap.put ( "isSeen", "true" );
+                                ds.getRef ().updateChildren ( hasSeenHasMap );
+                            }
+                        }
+                        catch (Exception e){
+
+                        }
+                    }
+
+                }
             }
 
             @Override
@@ -678,85 +783,118 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
+
     //sending Chat Message--
     public void sendChatMessage(View view){
+        final ArrayList<String> blockedList = new ArrayList<> (  );
+        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
+                .child ( mAuth.getCurrentUser ().getUid () )
+                .addValueEventListener ( new ValueEventListener () {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        blockedList.clear ();
+                        try{
+                            for(DataSnapshot ds : dataSnapshot.getChildren ()) {
+                                blockedList.add ( ds.getKey () );
+                            }
+                        }
+                        catch (Exception e) {
 
-        notify = true;
+                        }
 
-        Calendar calendar = Calendar.getInstance ();
-        SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
-        final String currentDate = currentDateTime.format ( calendar.getTime () );
-        final String message = chatMessage.getText ().toString ();
-        Map<String , Object> messages = new HashMap<> (  );
-        messages.put ("sender", userId );
-        messages.put ( "receiver", id );
-        messages.put ( "message",message );
-        messages.put("time",currentDate);
-        messages.put ( "isSeen","false" );
+                        if(!blockedList.contains ( id ) && blockedList.isEmpty ()) {
+
+                            notify = true;
+
+                            Calendar calendar = Calendar.getInstance ();
+                            SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
+                            final String currentDate = currentDateTime.format ( calendar.getTime () );
+                            final String message = chatMessage.getText ().toString ();
+                            Map<String , Object> messages = new HashMap<> (  );
+                            messages.put ("sender", userId );
+                            messages.put ( "receiver", id );
+                            messages.put ( "message",message );
+                            messages.put("deletedBySender","no");
+                            messages.put ( "deletedByReceiver","no" );
+                            messages.put("time",currentDate);
+                            messages.put ( "isSeen","false" );
+
+                            DatabaseReference databaseReference = database.getReference ();
+
+                            databaseReference.child ( "Chats" ).push ().setValue ( messages );
+
+                            chatMessage.setText ( "" );
+
+                            final String msg = message;
+                            db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
+                                @Override
+                                public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                                    if(e==null) {
+                                        if(notify) {
+                                            String name =  documentSnapshot.getString ( "nickName" );
+                                            sendNotification(id,name,msg);
+                                        }
+                                        notify = false;
+                                    }
+                                }
+                            } );
 
 
-        DatabaseReference databaseReference = database.getReference ();
 
-        databaseReference.child ( "Chats" ).push ().setValue ( messages );
+                            final DatabaseReference chatRef1 = FirebaseDatabase.getInstance ().getReference ("ChatList")
+                                    .child ( userId )
+                                    .child ( id );
 
-        chatMessage.setText ( "" );
+                            chatRef1.addValueEventListener ( new ValueEventListener () {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-        final String msg = message;
-        db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if(e==null) {
-                    if(notify) {
-                        String name =  documentSnapshot.getString ( "nickName" );
-                        sendNotification(id,name,msg);
+                                    if(!dataSnapshot.exists ()) {
+                                        chatRef1.child ( "id" ).setValue ( id );
+                                    }
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            } );
+
+
+                            final DatabaseReference chatRef2 = FirebaseDatabase.getInstance ().getReference ("ChatList")
+                                    .child ( id )
+                                    .child ( userId );
+
+                            chatRef2.addValueEventListener ( new ValueEventListener () {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    if(!dataSnapshot.exists ()) {
+                                        chatRef2.child ( "id" ).setValue ( userId );
+                                    }
+
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            } );
+
+
+                        }
+                        else{
+                            Toast.makeText ( ChatActivity.this, "User is blocked, unblock to continue", Toast.LENGTH_LONG ).show ();
+                        }
+
                     }
-                    notify = false;
-                }
-            }
-        } );
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                    }
+                } );
 
-
-        final DatabaseReference chatRef1 = FirebaseDatabase.getInstance ().getReference ("ChatList")
-                .child ( userId )
-                .child ( id );
-
-        chatRef1.addValueEventListener ( new ValueEventListener () {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(!dataSnapshot.exists ()) {
-                    chatRef1.child ( "id" ).setValue ( id );
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        } );
-
-
-        final DatabaseReference chatRef2 = FirebaseDatabase.getInstance ().getReference ("ChatList")
-                .child ( id )
-                .child ( userId );
-
-        chatRef2.addValueEventListener ( new ValueEventListener () {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                if(!dataSnapshot.exists ()) {
-                    chatRef2.child ( "id" ).setValue ( userId );
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        } );
 
 
     }    //sending Chat Message--
@@ -808,13 +946,37 @@ public class ChatActivity extends AppCompatActivity {
 
     //send image button click..
     public void sendImage(View view) {
+        final ArrayList<String> blockedList = new ArrayList<> (  );
         if(ContextCompat.checkSelfPermission ( getApplicationContext (), Manifest.permission.READ_EXTERNAL_STORAGE ) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions ( ChatActivity.this,
                     new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},REQUEST_CODE_STORAGE_PERMISSION );
         }
         else{
 
-            CropImage.activity ().start ( ChatActivity.this);
+            FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
+                    .child ( mAuth.getCurrentUser ().getUid () ).addValueEventListener ( new ValueEventListener () {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                   blockedList.clear ();
+                   for(DataSnapshot ds: dataSnapshot.getChildren ()) {
+                       blockedList.add ( ds.getKey () );
+                   }
+                   if(!blockedList.contains ( id )) {
+                       CropImage.activity ().start ( ChatActivity.this);
+
+                   }else{
+                       Toast.makeText ( ChatActivity.this, "User blocked, unblock to continue", Toast.LENGTH_LONG ).show ();
+                   }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            } );
+
+
 
         }
     }    //send image button click..
@@ -869,20 +1031,23 @@ public class ChatActivity extends AppCompatActivity {
                         Calendar calendar = Calendar.getInstance ();
                         SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
                         final String currentDate = currentDateTime.format ( calendar.getTime () );
-                      Map<String, Object> imageMessage = new HashMap<> (  );
-                      imageMessage.put ( "image",uri.toString () );
-                      imageMessage.put ( "sender",userId );
-                      imageMessage.put ( "receiver",id );
-                      imageMessage.put("time",currentDate);
-                      imageMessage.put ( "isSeen","false" );
+                        Map<String, Object> imageMessage = new HashMap<> (  );
+                        imageMessage.put ( "image",uri.toString () );
+                        imageMessage.put ( "sender",userId );
+                        imageMessage.put ( "receiver",id );
+                        imageMessage.put("deletedBySender","no");
+                        imageMessage.put ( "deletedByReceiver","no" );
+                        imageMessage.put("time",currentDate);
+                        imageMessage.put ( "isSeen","false" );
 
 
                         DatabaseReference databaseReference = database.getReference ();
 
-                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).addOnSuccessListener ( new OnSuccessListener<Void> () {
+                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).
+                                addOnSuccessListener ( new OnSuccessListener<Void> () {
                             @Override
                             public void onSuccess(Void aVoid) {
-                              progressDialog.dismiss ();
+                                progressDialog.dismiss ();
 
 
                                 notify = true;
@@ -978,7 +1143,7 @@ public class ChatActivity extends AppCompatActivity {
 
     //back button ---
     public void chatBack(View view) {
-      finish ();
+        finish ();
     } //back button ---
 
     public void checkConnection() {

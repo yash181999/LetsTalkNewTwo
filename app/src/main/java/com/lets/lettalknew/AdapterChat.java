@@ -166,7 +166,7 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
     public int getItemViewType(int position) {
         //get current signed user;
         user = FirebaseAuth.getInstance ().getCurrentUser ();
-        if(chatList.get ( position ).getSender ().equals ( user.getUid () )) {
+        if(chatList.get ( position ).getSender ().equals ( user.getUid () ) ) {
             return MSG_TYPE_RIGHT;
 
         }
