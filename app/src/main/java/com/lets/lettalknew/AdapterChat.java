@@ -70,33 +70,37 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
       String message  = chatList.get ( position ).getMessage ();
       final String image = chatList.get ( position ).getImage ();
       String time= chatList.get ( position ).getTime ();
+      String[] timeArr = time.split ( " " );
       final String audio = chatList.get ( position ).getAudio ();
 
 
 
 
       if(message!=null) {
-          holder.messageText.setText ( message );
-          holder.textMsgTime.setText ( time );
+          holder.messageText.setText ( message.trim () );
+          holder.textMsgTime.setText ( timeArr[1] );
           holder.textMsgLayout.setVisibility ( View.VISIBLE );
           holder.imageMsgLayout.setVisibility ( View.GONE );
           holder.audioMsgLayout.setVisibility ( View.GONE );
 
 
-          String isSeen = lastSeenList.get ( position);
-          if(isSeen.equals ( "true" )) {
+          String isSeen = lastSeenList.get ( position );
+          if (isSeen != null) {
+
+           if (isSeen.equals ( "true" )) {
               holder.textMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
-          }
-          else {
+           } else {
               holder.textMsgTicks.setImageResource ( R.drawable.done_all_black );
-          }
+           }
+      }
+
 
 
       }
 
 
       if(audio!=null) {
-          holder.audioMsgTime.setText ( time );
+          holder.audioMsgTime.setText ( timeArr[1] );
           holder.textMsgLayout.setVisibility ( View.GONE );
           holder.imageMsgLayout.setVisibility ( View.GONE );
           holder.audioMsgLayout.setVisibility ( View.VISIBLE );
@@ -121,8 +125,11 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
           if(isSeen.equals ( "true" )) {
               holder.audioMsgTicks.setImageResource ( R.drawable.ic_done_all_blue );
           }
-          else {
+          else if(isSeen.equals ( "false" )) {
               holder.audioMsgTicks.setImageResource ( R.drawable.done_all_black );
+          }
+          else{
+              holder.audioMsgTicks.setImageResource ( R.drawable.ic_baseline_done_24 );
           }
       }
 
@@ -131,7 +138,7 @@ public class AdapterChat extends RecyclerView.Adapter<AdapterChat.MyHolder> {
 
           Picasso.get ().load ( image )
                   .fit ().into (holder.messageImage);
-          holder.imageMsgTime.setText ( time );
+          holder.imageMsgTime.setText ( timeArr[1]);
           holder.imageMsgLayout.setVisibility ( View.VISIBLE );
           holder.textMsgLayout.setVisibility ( View.GONE );
           holder.audioMsgLayout.setVisibility ( View.GONE );

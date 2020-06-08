@@ -69,7 +69,7 @@
               android:id="@+id/textView8"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:text="Disconvery Settings"
+              android:text="Discovery Settings"
               android:textColor="@color/orange"
               android:textSize="22sp"
               android:textStyle="bold"

@@ -183,10 +183,17 @@ public class Main extends AppCompatActivity implements
                 if(e==null) {
                    String profilePic =  documentSnapshot.getString ("profilePic1");
                     if (profilePic != null) {
+                       try{
+                           Picasso.get ().
+                                   load ( profilePic ).placeholder ( R.drawable.dummyprofile ).fit ()
+                                   .into ( roundedImageView );
+                       }
+                       catch (Exception ex){
+                           Picasso.get ().
+                                   load ( R.drawable.dummyprofile ).placeholder ( R.drawable.dummyprofile ).fit ()
+                                   .into ( roundedImageView );
+                       }
 
-                        Picasso.get ().
-                                load ( profilePic )
-                                .into ( roundedImageView );
                     }
                     String nickName = documentSnapshot.getString ( "nickName" );
                     if(nickName!= null ) {

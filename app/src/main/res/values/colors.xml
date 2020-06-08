@@ -21,4 +21,10 @@
     <color name="colorLightGray">#D3D3D3</color>
 
     <color name="colorBack">#f5faf6</color>
+
+    <color name="colorGreen">#25D366</color>
+
+    <color name="colorLightGreen">#e2ffc7</color>
+
+    <color name="backGray">#e0e0e0</color>
 </resources>

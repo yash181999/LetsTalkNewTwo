@@ -117,16 +117,71 @@ public class PreviousChats extends Fragment {
     }
 
     private void lastMessage(final  String userId) {
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance ().getReference ("Chats");
-        databaseReference.addValueEventListener ( new ValueEventListener () {
+//        DatabaseReference databaseReference = FirebaseDatabase.getInstance ().getReference ("Chats");
+//        databaseReference.addValueEventListener ( new ValueEventListener () {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                String theLastMessage = null;
+//                String theLastPhoto = null ;
+//                String theLastAudio = null ;
+//
+//                for(DataSnapshot ds : dataSnapshot.getChildren ()) {
+//                    ModalChat chat = ds.getValue (ModalChat.class);
+//                    if(chat==null) {
+//                        continue;
+//                    }
+//                    String sender = chat.getSender ();
+//                    String receiver = chat.getReceiver ();
+//                    if(sender == null || receiver==null) {
+//                        continue;
+//                    }
+//                    if(chat.getReceiver ().equals (user.getUid ()) &&
+//                            chat.getSender ().equals ( userId) ||
+//                            chat.getReceiver ().equals ( userId ) &&
+//                                    chat.getSender ().equals ( user.getUid () )) {
+//
+//                          theLastMessage = chat.getMessage ();
+//                          theLastPhoto = chat.getImage ();
+//                          theLastAudio = chat.getAudio ();
+//
+//                    }
+//
+//                }
+//
+//                if(theLastAudio!=null) {
+//
+//                    adapterChatList.setLastMessageMap ( userId,"Audio" );
+//                    adapterChatList.notifyDataSetChanged ();
+//                }
+//
+//                else if(theLastMessage!=null) {
+//
+//                    adapterChatList.setLastMessageMap ( userId,theLastMessage );
+//                    adapterChatList.notifyDataSetChanged ();
+//                }
+//                else if(theLastPhoto!=null){
+//                    adapterChatList.setLastMessageMap ( userId,"Photo" );
+//                    adapterChatList.notifyDataSetChanged ();
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        } );
+
+
+        db.collection ( "Chats" ).addSnapshotListener ( new EventListener<QuerySnapshot> () {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 String theLastMessage = null;
                 String theLastPhoto = null ;
                 String theLastAudio = null ;
 
-                for(DataSnapshot ds : dataSnapshot.getChildren ()) {
-                    ModalChat chat = ds.getValue (ModalChat.class);
+                for(DocumentSnapshot ds : queryDocumentSnapshots) {
+                    ModalChat chat = ds.toObject (ModalChat.class);
                     if(chat==null) {
                         continue;
                     }
@@ -140,9 +195,9 @@ public class PreviousChats extends Fragment {
                             chat.getReceiver ().equals ( userId ) &&
                                     chat.getSender ().equals ( user.getUid () )) {
 
-                          theLastMessage = chat.getMessage ();
-                          theLastPhoto = chat.getImage ();
-                          theLastAudio = chat.getAudio ();
+                        theLastMessage = chat.getMessage ();
+                        theLastPhoto = chat.getImage ();
+                        theLastAudio = chat.getAudio ();
 
                     }
 
@@ -165,12 +220,10 @@ public class PreviousChats extends Fragment {
                 }
 
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
         } );
+
+
+
 
     }
 

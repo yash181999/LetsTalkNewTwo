@@ -17,6 +17,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaRecorder;
@@ -54,6 +55,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -77,6 +79,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import hani.momanii.supernova_emoji_library.Actions.EmojIconActions;
 import hani.momanii.supernova_emoji_library.Helper.EmojiconEditText;
@@ -125,8 +128,8 @@ public class ChatActivity extends AppCompatActivity {
     FirebaseStorage storage;
     String fileName = null;
     //checking seen and unseen
-    ValueEventListener seenListener;
-    DatabaseReference userRefForSeen;
+    EventListener seenListener;
+    CollectionReference userRefForSeen;
 
     MediaRecorder recorder;
 
@@ -143,7 +146,6 @@ public class ChatActivity extends AppCompatActivity {
     Dialog warningDialog;
 
 
-    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
@@ -175,7 +177,7 @@ public class ChatActivity extends AppCompatActivity {
 
         seenList = new ArrayList<> (  );
 
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager ( this );
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager ( getApplicationContext () );
 
         linearLayoutManager.setStackFromEnd ( true );
         chatListView.setHasFixedSize ( true );
@@ -205,19 +207,6 @@ public class ChatActivity extends AppCompatActivity {
         emojIconActions = new EmojIconActions (getApplicationContext () ,rootView , (EmojiconEditText) chatMessage,emojy );
 
         emojIconActions.ShowEmojIcon ();
-
-        emojIconActions.setKeyboardListener(new EmojIconActions.KeyboardListener() {
-            @Override
-            public void onKeyboardOpen() {
-
-            }
-
-            @Override
-            public void onKeyboardClose() {
-
-            }
-        });
-
 
         //for audio chat ...
         chatAudioBtn.setOnTouchListener ( new View.OnTouchListener () {
@@ -419,9 +408,6 @@ public class ChatActivity extends AppCompatActivity {
         catch (Exception e){
 
         }
-
-
-
     }
 
 //    public void removeChats() {
@@ -514,10 +500,16 @@ public class ChatActivity extends AppCompatActivity {
                         chatWithName.setText ( nickName );
                         hisName = nickName;
                     }
-                    String profilePic = documentSnapshot.getString ( "ProfilePic1" );
+                    String profilePic = documentSnapshot.getString ( "profilePic1" );
                     if(profilePic!=null) {
                         chatWIthProfileImage = profilePic;
-                        Picasso.get ().load ( profilePic ).fit ().into ( chatWithImage );
+                        try{
+                            Picasso.get ().load ( profilePic ).placeholder ( R.drawable.dummyprofile ).fit ().into ( chatWithImage );
+                        }
+                        catch (Exception ex){
+                            Picasso.get ().load (  R.drawable.dummyprofile  ).placeholder ( R.drawable.dummyprofile ).fit ().into ( chatWithImage );
+                        }
+
                     }
                     String status = documentSnapshot.getString ( "userStatus" );
                     boolean lastSeenStatus = documentSnapshot.getBoolean ( "shareLastSeen" );
@@ -547,6 +539,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         } );
+
     }    //loading user Information to top bar---
 
 
@@ -607,8 +600,6 @@ public class ChatActivity extends AppCompatActivity {
         progressDialog.setMessage ( "Sending audio" );
         progressDialog.show ();
 
-
-
         final StorageReference filePath = storage.getReference ().child ( "Audios" ).child ( userId ).child ( id ).child (currentDate);
 
 
@@ -622,26 +613,19 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Uri uri) {
 
+                        ModalChat messages = new ModalChat (null,id,userId,null,currentDate,"false",uri.toString (),"no","no"  );
 
-                        Map<String, Object> imageMessage = new HashMap<> (  );
-                        imageMessage.put ( "audio",uri.toString () );
-                        imageMessage.put ( "sender",userId );
-                        imageMessage.put ( "receiver",id );
-                        imageMessage.put("deletedBySender","no");
-                        imageMessage.put ( "deletedByReceiver","no" );
-                        imageMessage.put("time",currentDate);
-                        imageMessage.put ( "isSeen","false" );
 
-                        DatabaseReference databaseReference = database.getReference ();
 
-                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).addOnSuccessListener ( new OnSuccessListener<Void> () {
+                        db.collection ( "Chats" ).document (currentDate).set ( messages ).addOnSuccessListener ( new OnSuccessListener<Void> () {
                             @Override
                             public void onSuccess(Void aVoid) {
+
                                 progressDialog.dismiss ();
 
                                 notify = true;
 
-                                final String msg = "AUDIO MESSAGE";
+                                final String msg = "PHOTO";
                                 db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
                                     @Override
                                     public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -679,48 +663,82 @@ public class ChatActivity extends AppCompatActivity {
 
         chatList = new ArrayList<> (  );
 
-        DatabaseReference dRef = database.getReference ("Chats");
+//        DatabaseReference dRef = database.getReference ("Chats");
+//
+//        dRef.addValueEventListener ( new ValueEventListener () {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                chatList.clear ();
+//                lastSeenList.clear ();
+//                for(DataSnapshot ds : dataSnapshot.getChildren ()) {
+//                    ModalChat chat = ds.getValue (ModalChat.class);
+//                    if(chat!=null){
+//
+//                            if( (chat.getReceiver ().equals (userId) && chat.getSender ().equals (id) ) ||
+//                                    ( chat.getSender ().equals (userId) && chat.getReceiver ().equals (id)) ) {
+//
+//                                chatList.add ( chat );
+//
+//                                String lastSeen = ds.child ( "isSeen" ).getValue (String.class);
+//                                lastSeenList.add ( lastSeen );
+//
+//                            }
+//
+//                            adapterChat = new AdapterChat ( ChatActivity.this,
+//                                    chatList,lastSeenList);
+//                            chatListView.setAdapter ( adapterChat );
+//                            adapterChat.notifyDataSetChanged ();
+//
+//                            chatListView.getLayoutManager ().scrollToPosition ( adapterChat.getItemCount ()-1 );
+//
+//
+//                    }
+//
+//                }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        } );
 
-        dRef.addValueEventListener ( new ValueEventListener () {
+
+        db.collection ( "Chats" ).addSnapshotListener ( new EventListener<QuerySnapshot> () {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                chatList.clear ();
-                lastSeenList.clear ();
-                for(DataSnapshot ds : dataSnapshot.getChildren ()) {
-                    ModalChat chat = ds.getValue (ModalChat.class);
-                    if(chat!=null){
-                        try{
-                            if( (chat.getReceiver ().equals (userId) && chat.getSender ().equals (id) ) ||
-                                    ( chat.getSender ().equals (userId) && chat.getReceiver ().equals (id)) ) {
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (e == null) {
+
+                    chatList.clear ();
+                    lastSeenList.clear ();
+                    for (DocumentSnapshot ds : queryDocumentSnapshots) {
+                        ModalChat chat = ds.toObject ( ModalChat.class );
+                        if (chat != null) {
+
+                            if ((chat.getReceiver ().equals ( userId ) && chat.getSender ().equals ( id )) ||
+                                    (chat.getSender ().equals ( userId ) && chat.getReceiver ().equals ( id ))) {
 
                                 chatList.add ( chat );
 
-                                String lastSeen = ds.child ( "isSeen" ).getValue (String.class);
+                                String lastSeen = ds.getString ("seen");
                                 lastSeenList.add ( lastSeen );
+
 
                             }
 
                             adapterChat = new AdapterChat ( ChatActivity.this,
-                                    chatList,lastSeenList);
-
+                                    chatList, lastSeenList );
+                            chatListView.setAdapter ( adapterChat );
                             adapterChat.notifyDataSetChanged ();
 
-                            chatListView.setAdapter ( adapterChat );
-                            chatListView.getLayoutManager ().scrollToPosition ( adapterChat.getItemCount ()-1 );
-                        }
-                        catch (Exception e) {
+                            chatListView.getLayoutManager ().scrollToPosition ( adapterChat.getItemCount () - 1 );
 
                         }
+
 
                     }
-
                 }
             }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        } );
+            } );
 
     }
     //loading Messages--
@@ -729,35 +747,31 @@ public class ChatActivity extends AppCompatActivity {
 
     //checking seen message status---
     public void seenMessage() {
-        userRefForSeen = database.getReference ("Chats");
+        userRefForSeen = db.collection ( "Chats" );
 
-        seenListener = userRefForSeen.addValueEventListener ( new ValueEventListener () {
+        userRefForSeen.addSnapshotListener ( new EventListener<QuerySnapshot> () {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds : dataSnapshot.getChildren ()) {
-                    ModalChat chat = ds.getValue (ModalChat.class);
+            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                for(DocumentSnapshot ds : queryDocumentSnapshots) {
+                    ModalChat chat = ds.toObject (ModalChat.class);
                     if(chat!=null){
                         try{
                             if (chat.getReceiver ().equals ( userId ) && chat.getSender ().equals ( id )) {
 
                                 HashMap<String, Object> hasSeenHasMap = new HashMap<> ();
-                                hasSeenHasMap.put ( "isSeen", "true" );
-                                ds.getRef ().updateChildren ( hasSeenHasMap );
+                                hasSeenHasMap.put ( "seen", "true" );
+                                ds.getReference ().update ( hasSeenHasMap );
                             }
                         }
-                        catch (Exception e){
+                        catch (Exception ex){
 
                         }
                     }
 
                 }
             }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
         } );
+
     }    //checking seen message status---
 
 
@@ -767,7 +781,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause ();
         checkConnection ();
-        userRefForSeen.removeEventListener ( seenListener );
+//        userRefForSeen.document ().update ( (Map<String, Object>) seenListener );
 
         if(mAuth.getCurrentUser ()!=null) {
             String currentDate;
@@ -787,44 +801,19 @@ public class ChatActivity extends AppCompatActivity {
     //sending Chat Message--
     public void sendChatMessage(View view){
         final ArrayList<String> blockedList = new ArrayList<> (  );
-        FirebaseDatabase.getInstance ().getReference ().child ( "BlockedUsers" )
-                .child ( mAuth.getCurrentUser ().getUid () )
-                .addValueEventListener ( new ValueEventListener () {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        blockedList.clear ();
-                        try{
-                            for(DataSnapshot ds : dataSnapshot.getChildren ()) {
-                                blockedList.add ( ds.getKey () );
-                            }
-                        }
-                        catch (Exception e) {
-
-                        }
-
-                        if(!blockedList.contains ( id ) && blockedList.isEmpty ()) {
-
                             notify = true;
-
                             Calendar calendar = Calendar.getInstance ();
                             SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
                             final String currentDate = currentDateTime.format ( calendar.getTime () );
                             final String message = chatMessage.getText ().toString ();
-                            Map<String , Object> messages = new HashMap<> (  );
-                            messages.put ("sender", userId );
-                            messages.put ( "receiver", id );
-                            messages.put ( "message",message );
-                            messages.put("deletedBySender","no");
-                            messages.put ( "deletedByReceiver","no" );
-                            messages.put("time",currentDate);
-                            messages.put ( "isSeen","false" );
 
-                            DatabaseReference databaseReference = database.getReference ();
 
-                            databaseReference.child ( "Chats" ).push ().setValue ( messages );
+                            ModalChat messages = new ModalChat (message,id,userId,null,currentDate,"false",null,"no","no"  );
+
 
                             chatMessage.setText ( "" );
 
+                        db.collection ( "Chats" ).document (currentDate).set ( messages );
                             final String msg = message;
                             db.collection ( "Users" ).document (userId).addSnapshotListener ( new EventListener<DocumentSnapshot> () {
                                 @Override
@@ -838,7 +827,6 @@ public class ChatActivity extends AppCompatActivity {
                                     }
                                 }
                             } );
-
 
 
                             final DatabaseReference chatRef1 = FirebaseDatabase.getInstance ().getReference ("ChatList")
@@ -861,7 +849,6 @@ public class ChatActivity extends AppCompatActivity {
                                 }
                             } );
 
-
                             final DatabaseReference chatRef2 = FirebaseDatabase.getInstance ().getReference ("ChatList")
                                     .child ( id )
                                     .child ( userId );
@@ -881,22 +868,6 @@ public class ChatActivity extends AppCompatActivity {
 
                                 }
                             } );
-
-
-                        }
-                        else{
-                            Toast.makeText ( ChatActivity.this, "User is blocked, unblock to continue", Toast.LENGTH_LONG ).show ();
-                        }
-
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                } );
-
-
-
     }    //sending Chat Message--
 
 
@@ -942,8 +913,6 @@ public class ChatActivity extends AppCompatActivity {
     }    //send Notificaton...
 
 
-
-
     //send image button click..
     public void sendImage(View view) {
         final ArrayList<String> blockedList = new ArrayList<> (  );
@@ -976,11 +945,8 @@ public class ChatActivity extends AppCompatActivity {
                 }
             } );
 
-
-
         }
     }    //send image button click..
-
 
 
     //on perimisson image--
@@ -1003,7 +969,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     }    //on perimisson image--
-
 
 
 
@@ -1031,24 +996,14 @@ public class ChatActivity extends AppCompatActivity {
                         Calendar calendar = Calendar.getInstance ();
                         SimpleDateFormat currentDateTime = new SimpleDateFormat ( "dd-MM-yyyy HH:mm:ss" );
                         final String currentDate = currentDateTime.format ( calendar.getTime () );
-                        Map<String, Object> imageMessage = new HashMap<> (  );
-                        imageMessage.put ( "image",uri.toString () );
-                        imageMessage.put ( "sender",userId );
-                        imageMessage.put ( "receiver",id );
-                        imageMessage.put("deletedBySender","no");
-                        imageMessage.put ( "deletedByReceiver","no" );
-                        imageMessage.put("time",currentDate);
-                        imageMessage.put ( "isSeen","false" );
 
+                        ModalChat messages = new ModalChat (null,id,userId,uri.toString (),currentDate,"false",null,"no","no"  );
 
-                        DatabaseReference databaseReference = database.getReference ();
-
-                        databaseReference.child ( "Chats" ).push ().setValue ( imageMessage ).
-                                addOnSuccessListener ( new OnSuccessListener<Void> () {
+                        db.collection ( "Chats" ).document (currentDate).set ( messages ).addOnSuccessListener ( new OnSuccessListener<Void> () {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                progressDialog.dismiss ();
 
+                                progressDialog.dismiss ();
 
                                 notify = true;
 
@@ -1065,7 +1020,6 @@ public class ChatActivity extends AppCompatActivity {
                                         }
                                     }
                                 } );
-
 
                             }
                         } );
@@ -1165,7 +1119,7 @@ public class ChatActivity extends AppCompatActivity {
 
         }
         else {
-            Toast.makeText ( this, "not internet connection", Toast.LENGTH_SHORT ).show ();
+            Toast.makeText ( this, "no internet connection", Toast.LENGTH_SHORT ).show ();
         }
 
     }
